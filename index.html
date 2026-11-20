@@ -196,11 +196,22 @@
       border-radius: 9px;
       padding: 10px 12px;
     }
+    .entry-card.marked-delete {
+      border-color: #7f1d1d;
+      background: #1a1114;
+      opacity: 0.85;
+    }
     .entry-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
+    }
+    .entry-actions-right {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
     }
     .entry-title {
       font-size: 14px;
@@ -222,6 +233,16 @@
       background: #422006;
       color: #fde68a;
       border: 1px solid #854d0e;
+    }
+    .delete-pill {
+      display: inline-block;
+      margin-top: 5px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      background: #45141a;
+      color: #fca5a5;
+      border: 1px solid #991b1b;
     }
     .btn-mini {
       padding: 6px 10px;
@@ -383,10 +404,10 @@
       <div class="list" id="tempList"></div>
     </section>
 
-    <!-- 4. المحتوى المنشور وتعديل روابط الفيديو -->
+    <!-- 4. المحتوى المنشور وتعديل الروابط والحذف -->
     <section class="card">
       <div class="card-title-row">
-        <h2>المحتوى المنشور وتعديل روابط الفيديو <span class="badge" id="publishedBadge">0</span></h2>
+        <h2>المحتوى المنشور وتعديل الروابط <span class="badge" id="publishedBadge">0</span></h2>
         <button type="button" class="btn btn-gray btn-inline" id="refreshBtn" onclick="loadPublishedContent(true)">🔄 تحديث من GitHub</button>
       </div>
 
@@ -404,9 +425,9 @@
       </div>
 
       <button type="button" class="btn btn-sky" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
-        💾 نشر تعديلات الروابط (<span id="pendingLinksBadge">0</span> معلقة)
+        💾 نشر تعديلات وحذف المنشور (<span id="pendingLinksBadge">0</span> معلقة)
       </button>
-      <div class="hint">تعديلات الروابط تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
+      <div class="hint">تعديلات الروابط والبيانات وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
 
       <div class="list" id="publishedList"></div>
     </section>
@@ -428,7 +449,7 @@
     let sessionToken = "";
     let tempItems = [];
     let publishedItems = [];
-    let pendingLinkUpdates = {};
+    let pendingLinkUpdates = {}; // key -> { key, itemId, title, category, newVideoUrl, editTitle?, editDescription?, editCategory?, editThumbnailUrl?, editEpisodesCount?, markDeleted? }
     let activeFilter = "all";
     let editingKey = null;
 
@@ -722,6 +743,21 @@
       return c === f || c.includes(f);
     }
 
+    function findPendingForItem(item, idx) {
+      const k = itemKey(item, idx);
+      if (pendingLinkUpdates[k]) return { key: k, data: pendingLinkUpdates[k] };
+      const all = Object.values(pendingLinkUpdates);
+      if (item && item.id !== undefined) {
+        const byId = all.find(u => u.itemId && String(u.itemId) === String(item.id));
+        if (byId) return { key: byId.key || k, data: byId };
+      }
+      if (item && item.title) {
+        const byTitle = all.find(u => u.title && String(u.title) === String(item.title));
+        if (byTitle) return { key: byTitle.key || k, data: byTitle };
+      }
+      return { key: k, data: null };
+    }
+
     function renderPublishedList() {
       const list = document.getElementById("publishedList");
       const query = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
@@ -749,26 +785,58 @@
       }
 
       rows.forEach(({ item, idx, key }) => {
-        const pending = pendingLinkUpdates[key];
-        const displayUrl = pending ? pending.newVideoUrl : (item.videoUrl || "");
-        const epInfo = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
+        const { data: pending } = findPendingForItem(item, idx);
+        const isDeleted = Boolean(pending && pending.markDeleted);
+        const displayTitle = (pending && pending.editTitle) ? pending.editTitle : (item.title || "بدون اسم");
+        const displayCategory = (pending && pending.editCategory) ? pending.editCategory : (item.category || "غير محدد");
+        const displayDesc = (pending && pending.editDescription !== undefined) ? pending.editDescription : (item.description || "");
+        const displayThumb = (pending && pending.editThumbnailUrl !== undefined) ? pending.editThumbnailUrl : (item.thumbnailUrl || "");
+        const displayEpisodes = (pending && pending.editEpisodesCount !== undefined) ? pending.editEpisodesCount : (item.episodesCount || "");
+        const displayUrl = (pending && pending.newVideoUrl) ? pending.newVideoUrl : (item.videoUrl || "");
+        const epInfo = displayEpisodes ? ` | عدد الحلقات: ${displayEpisodes}` : "";
         const isOpen = editingKey === key;
 
         const card = document.createElement("div");
-        card.className = "entry-card";
+        card.className = `entry-card ${isDeleted ? "marked-delete" : ""}`;
         card.innerHTML = `
           <div class="entry-head">
             <div>
-              <div class="entry-title">${esc(item.title || "بدون اسم")}</div>
-              <div class="entry-meta">التصنيف: ${esc(item.category || "غير محدد")}${epInfo}</div>
+              <div class="entry-title">${esc(displayTitle)}</div>
+              <div class="entry-meta">التصنيف: ${esc(displayCategory)}${epInfo}</div>
               <div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>
-              ${pending ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
+              ${isDeleted ? `<span class="delete-pill">معلّم للحذف في localStorage (بانتظار النشر)</span>` : ""}
+              ${(!isDeleted && pending) ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
             </div>
-            <button type="button" class="btn-mini btn-blue" id="btn-edit-${idx}">تعديل الرابط</button>
+            <div class="entry-actions-right">
+              <button type="button" class="btn-mini btn-blue" id="btn-edit-${idx}">تعديل</button>
+              <button type="button" class="btn-mini ${isDeleted ? "btn-green" : "btn-danger-soft"}" id="btn-del-${idx}">${isDeleted ? "تراجع" : "حذف"}</button>
+            </div>
           </div>
           <div class="edit-panel ${isOpen ? "" : "hidden"}" id="panel-edit-${idx}">
-            <label for="input-url-${idx}">رابط الفيديو الجديد:</label>
-            <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
+            <div class="field">
+              <label for="input-title-${idx}">الاسم:</label>
+              <input type="text" id="input-title-${idx}" value="${esc(displayTitle)}" />
+            </div>
+            <div class="field">
+              <label for="input-cat-${idx}">التصنيف:</label>
+              <input type="text" id="input-cat-${idx}" value="${esc(displayCategory)}" />
+            </div>
+            <div class="field">
+              <label for="input-desc-${idx}">الوصف:</label>
+              <input type="text" id="input-desc-${idx}" value="${esc(displayDesc)}" />
+            </div>
+            <div class="field">
+              <label for="input-thumb-${idx}">رابط الصورة:</label>
+              <input type="url" id="input-thumb-${idx}" value="${esc(displayThumb)}" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label for="input-ep-${idx}">عدد الحلقات (إن وجد):</label>
+              <input type="number" min="1" id="input-ep-${idx}" value="${esc(String(displayEpisodes || ""))}" placeholder="اختياري" />
+            </div>
+            <div class="field">
+              <label for="input-url-${idx}">رابط الفيديو:</label>
+              <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
+            </div>
             <div class="row-actions">
               <button type="button" class="btn-mini btn-green" id="btn-save-url-${idx}">حفظ في localStorage</button>
               <button type="button" class="btn-mini btn-gray" id="btn-cancel-url-${idx}">إلغاء</button>
@@ -782,29 +850,68 @@
           renderPublishedList();
         });
 
+        document.getElementById(`btn-del-${idx}`).addEventListener("click", () => {
+          if (isDeleted) {
+            delete pendingLinkUpdates[key];
+            savePendingLinks();
+            renderPublishedList();
+            updateJsonPreview();
+            setStatus(`تم التراجع عن حذف «${displayTitle}».`, "info");
+          } else {
+            pendingLinkUpdates[key] = {
+              key,
+              itemId: item.id !== undefined ? String(item.id) : "",
+              title: item.title || "",
+              category: item.category || "",
+              markDeleted: true
+            };
+            savePendingLinks();
+            if (editingKey === key) editingKey = null;
+            renderPublishedList();
+            updateJsonPreview();
+            setStatus(`تم تعليم «${displayTitle}» للحذف في localStorage؛ اضغط «نشر تعديلات وحذف المنشور» لتطبيقه.`, "info");
+          }
+        });
+
         document.getElementById(`btn-cancel-url-${idx}`).addEventListener("click", () => {
           editingKey = null;
           renderPublishedList();
         });
 
         document.getElementById(`btn-save-url-${idx}`).addEventListener("click", () => {
+          const newTitle = (document.getElementById(`input-title-${idx}`)?.value || "").trim() || (item.title || "");
+          const newCat = (document.getElementById(`input-cat-${idx}`)?.value || "").trim() || (item.category || "");
+          const newDesc = (document.getElementById(`input-desc-${idx}`)?.value || "").trim();
+          const newThumb = (document.getElementById(`input-thumb-${idx}`)?.value || "").trim();
+          const newEpRaw = (document.getElementById(`input-ep-${idx}`)?.value || "").trim();
           const newUrl = (document.getElementById(`input-url-${idx}`)?.value || "").trim();
+
           if (!newUrl) {
-            setStatus("أدخل رابط الفيديو الجديد قبل الحفظ.", "error");
+            setStatus("أدخل رابط الفيديو قبل الحفظ.", "error");
             return;
           }
+
+          const epParsed = newEpRaw ? parseInt(newEpRaw, 10) : 0;
+          const validEp = !Number.isNaN(epParsed) && epParsed > 0 ? epParsed : 0;
+
           pendingLinkUpdates[key] = {
             key,
             itemId: item.id !== undefined ? String(item.id) : "",
             title: item.title || "",
             category: item.category || "",
-            newVideoUrl: newUrl
+            newVideoUrl: newUrl,
+            editTitle: newTitle,
+            editCategory: newCat,
+            editDescription: newDesc,
+            editThumbnailUrl: newThumb,
+            editEpisodesCount: validEp,
+            markDeleted: false
           };
           savePendingLinks();
           editingKey = null;
           renderPublishedList();
           updateJsonPreview();
-          setStatus(`تم حفظ تعديل رابط «${item.title}» في localStorage.`, "success");
+          setStatus(`تم حفظ تعديلات «${newTitle}» في localStorage.`, "success");
         });
       });
     }
@@ -834,6 +941,13 @@
       return [];
     }
 
+    function formatGitHubError(status, rawText) {
+      if (status === 401) return "خطأ (401): التوكن غير صالح أو منتهي الصلاحية.";
+      if (status === 403) return "خطأ (403): التوكن يفتقر لصلاحية Contents (Read & Write) أو تم تجاوز حد الطلبات.";
+      if (status === 404) return "خطأ (404): المستودع أو الملف أو الفرع غير موجود؛ تحقق من الإعدادات.";
+      return `تعذر إتمام الطلب (${status}): ${rawText}`;
+    }
+
     async function fetchRemoteFile(cfg) {
       const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
       const headers = {
@@ -854,7 +968,7 @@
         return { apiUrl, headers, sha: null, videos: [] };
       } else {
         const errText = await res.text();
-        throw new Error(`تعذر قراءة الملف (${res.status}): ${errText}`);
+        throw new Error(formatGitHubError(res.status, errText));
       }
     }
 
@@ -892,7 +1006,8 @@
       const updates = Object.values(pendingLinkUpdates);
       if (updates.length === 0) return [...list];
 
-      return list.map((item, idx) => {
+      const result = [];
+      list.forEach((item, idx) => {
         const k = itemKey(item, idx);
         let match = pendingLinkUpdates[k];
         if (!match && item && item.id !== undefined) {
@@ -901,11 +1016,33 @@
         if (!match && item && item.title) {
           match = updates.find(u => u.title && String(u.title) === String(item.title));
         }
-        if (match && match.newVideoUrl) {
-          return { ...item, videoUrl: match.newVideoUrl };
+
+        if (match && match.markDeleted) {
+          return; // حذف العنصر من القائمة
         }
-        return item;
+
+        if (match) {
+          const updatedItem = { ...item };
+          if (match.newVideoUrl) updatedItem.videoUrl = match.newVideoUrl;
+          if (match.editTitle) updatedItem.title = match.editTitle;
+          if (match.editCategory) updatedItem.category = match.editCategory;
+          if (match.editDescription !== undefined) updatedItem.description = match.editDescription;
+          if (match.editThumbnailUrl !== undefined) updatedItem.thumbnailUrl = match.editThumbnailUrl;
+          if (match.editEpisodesCount !== undefined) {
+            if (match.editEpisodesCount > 0) {
+              updatedItem.episodesCount = match.editEpisodesCount;
+            } else {
+              delete updatedItem.episodesCount;
+            }
+          }
+          result.push(updatedItem);
+          return;
+        }
+
+        result.push(item);
       });
+
+      return result;
     }
 
     async function publish() {
@@ -956,7 +1093,7 @@
 
         if (!putRes.ok) {
           const errJson = await putRes.json().catch(() => ({}));
-          throw new Error(errJson.message || `فشل النشر (${putRes.status})`);
+          throw new Error(formatGitHubError(putRes.status, errJson.message || ""));
         }
 
         publishedItems = merged;
@@ -993,13 +1130,13 @@
 
       const count = Object.keys(pendingLinkUpdates).length;
       if (count === 0) {
-        setStatus("لا توجد تعديلات روابط معلقة.", "info");
+        setStatus("لا توجد تعديلات أو طلبات حذف معلقة.", "info");
         return;
       }
 
       const btn = document.getElementById("publishLinksBtn");
       btn.disabled = true;
-      setStatus("جاري جلب أحدث نسخة من videos.json وتطبيق تعديلات الروابط...", "info");
+      setStatus("جاري جلب أحدث نسخة من videos.json وتطبيق التعديلات/الحذف...", "info");
 
       try {
         const remote = await fetchRemoteFile(cfg);
@@ -1011,7 +1148,7 @@
           method: "PUT",
           headers: remote.headers,
           body: JSON.stringify({
-            message: `Update video links (${count}) in videos.json`,
+            message: `Update published items (${count}) in videos.json`,
             content: utf8ToBase64(formatted),
             branch: cfg.branch,
             ...(remote.sha ? { sha: remote.sha } : {})
@@ -1020,7 +1157,7 @@
 
         if (!putRes.ok) {
           const errJson = await putRes.json().catch(() => ({}));
-          throw new Error(errJson.message || `فشل نشر تعديلات الروابط (${putRes.status})`);
+          throw new Error(formatGitHubError(putRes.status, errJson.message || ""));
         }
 
         publishedItems = updatedList;
@@ -1030,9 +1167,9 @@
 
         renderPublishedList();
         updateJsonPreview();
-        setStatus(`تم إرسال تعديلات الروابط إلى ${cfg.file}؛ تحقق من التحديث في GitHub والتطبيق.`, "info");
+        setStatus(`تم إرسال تعديلات وحذف المنشور إلى ${cfg.file}؛ تحقق من التحديث في GitHub والتطبيق.`, "info");
       } catch (e) {
-        setStatus(`فشل نشر تعديلات الروابط (التعديلات بقيت محفوظة في localStorage): ${e.message}`, "error");
+        setStatus(`فشل النشر (التعديلات بقيت محفوظة في localStorage): ${e.message}`, "error");
       } finally {
         btn.disabled = false;
       }
