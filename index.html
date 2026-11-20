@@ -452,9 +452,15 @@
     let sessionToken = "";
     let tempItems = [];
     let publishedItems = [];
-    let pendingLinkUpdates = {}; // key -> { itemId, title, newVideoUrl, updatedAt }
+    let pendingLinkUpdates = {};
     let activePublishedFilter = "all";
     let currentlyEditingKey = null;
+
+    function sanitizeToken(rawVal) {
+      return String(rawVal || "")
+        .replace(/[\s\u200B-\u200D\uFEFF]/g, "")
+        .replace(/[^\x21-\x7E]/g, "");
+    }
 
     function setStatus(msg, type = "normal") {
       const el = document.getElementById("statusMsg");
@@ -477,7 +483,11 @@
     function syncTokenInput() {
       const tokenInput = document.getElementById("ghToken");
       if (tokenInput) {
-        sessionToken = tokenInput.value.trim();
+        const cleaned = sanitizeToken(tokenInput.value);
+        if (tokenInput.value !== cleaned) {
+          tokenInput.value = cleaned;
+        }
+        sessionToken = cleaned;
       }
     }
 
@@ -486,21 +496,20 @@
         const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (typeof parsed.owner === "string") {
-            document.getElementById("ghOwner").value = parsed.owner;
+          if (typeof parsed.owner === "string" && parsed.owner.trim()) {
+            document.getElementById("ghOwner").value = parsed.owner.trim();
           }
-          if (typeof parsed.repo === "string") {
-            document.getElementById("ghRepo").value = parsed.repo;
+          if (typeof parsed.repo === "string" && parsed.repo.trim()) {
+            document.getElementById("ghRepo").value = parsed.repo.trim();
           }
-          if (typeof parsed.file === "string") {
-            document.getElementById("ghFile").value = parsed.file;
+          if (typeof parsed.file === "string" && parsed.file.trim()) {
+            document.getElementById("ghFile").value = parsed.file.trim();
           }
-          if (typeof parsed.branch === "string") {
-            document.getElementById("ghBranch").value = parsed.branch;
+          if (typeof parsed.branch === "string" && parsed.branch.trim()) {
+            document.getElementById("ghBranch").value = parsed.branch.trim();
           }
         }
       } catch (_) {}
-      // لا يتم استرجاع التوكن من localStorage لأسباب أمنية
       document.getElementById("ghToken").value = sessionToken || "";
     }
 
@@ -543,8 +552,12 @@
       const repo = (repoEl ? repoEl.value : "").trim() || "-alawitv-data-v2";
       const file = ((fileEl ? fileEl.value : "").trim() || "videos.json").replace(/^\/+/, "");
       const branch = (branchEl ? branchEl.value : "").trim() || "main";
-      const token = ((tokenEl ? tokenEl.value : "").trim() || sessionToken || "").trim();
+      const rawToken = (tokenEl ? tokenEl.value : "") || sessionToken || "";
+      const token = sanitizeToken(rawToken);
 
+      if (tokenEl && tokenEl.value !== token) {
+        tokenEl.value = token;
+      }
       if (token) {
         sessionToken = token;
       }
@@ -1004,7 +1017,6 @@
 
         if (matchedUpdate && matchedUpdate.newVideoUrl) {
           appliedCount++;
-          // نحافظ على جميع الحقول الأخرى كما هي دون تغيير الاسم أو الصورة أو الوصف أو التصنيف
           return {
             ...item,
             videoUrl: matchedUpdate.newVideoUrl
@@ -1089,9 +1101,8 @@
         renderTempItems();
         renderPublishedItems();
         updateJsonPreview();
-        setStatus(`تم إرسال طلب النشر بنجاح إلى ${cfg.file} مع الحفاظ على جميع العناصر القديمة.`, "success");
+        setStatus(`تم إرسال طلب النشر إلى ${cfg.file}؛ تأكد من ظهوره في GitHub والتطبيق بعد التحديث.`, "info");
       } catch (e) {
-        // لا نحذف العناصر المؤقتة ولا التعديلات المعلقة عند فشل النشر
         setStatus(`فشل النشر (تم الإبقاء على بياناتك المؤقتة والمعلقة): ${e.message}`, "error");
       } finally {
         publishBtn.disabled = false;
@@ -1147,9 +1158,8 @@
 
         renderPublishedItems();
         updateJsonPreview();
-        setStatus(`تم إرسال تعديلات الروابط بنجاح إلى ${cfg.file} دون حذف أي عنصر قديم.`, "success");
+        setStatus(`تم إرسال تعديلات الروابط إلى ${cfg.file}؛ تحقق من التحديث في GitHub والتطبيق.`, "info");
       } catch (e) {
-        // لا نحذف التعديلات المعلقة في localStorage إذا فشل النشر
         setStatus(`فشل نشر تعديلات الروابط (التعديلات بقيت محفوظة في localStorage): ${e.message}`, "error");
       } finally {
         btn.disabled = false;
@@ -1182,7 +1192,6 @@
       setStatus("تم نسخ كود JSON إلى الحافظة.", "success");
     }
 
-    // تهيئة أولية عند فتح الصفحة
     loadSettings();
     loadPersistedData();
     handleCategoryChange();
@@ -1190,7 +1199,6 @@
     renderPublishedItems();
     updateJsonPreview();
 
-    // جلب المحتوى المنشور تلقائياً إذا كان التوكن متوفراً في الجلسة الحالية
     const initialCfg = config();
     if (initialCfg.owner && initialCfg.repo && initialCfg.token) {
       loadPublishedContent(false);
