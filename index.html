@@ -24,12 +24,12 @@ button{cursor:pointer}
 .red{background:#dc2626}
 .green{background:#16a34a}
 .gray{background:#374151}
+.purple{background:#7c3aed}
 .full{width:100%;margin-top:8px}
 .tagrow,.filters{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
 .tag{background:#222733;border:1px solid #3b4252;color:white;border-radius:20px;padding:7px 12px}
 .tag.active{background:#dc2626}
 .card{background:#12151b;border:1px solid #292f3b;border-radius:9px;padding:11px;margin-top:9px}
-.cardtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .meta{font-size:12px;color:#9ca3af;margin-top:5px;word-break:break-word}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .actions button{padding:8px 11px;border:0;border-radius:7px;color:white;font-size:12px}
@@ -37,6 +37,7 @@ button{cursor:pointer}
 textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;margin-top:12px}
 .hidden{display:none!important}
 .hint{font-size:11px;color:#9ca3af;line-height:1.6;margin-top:5px}
+.count{display:inline-block;background:#7c3aed;padding:4px 9px;border-radius:15px;font-size:12px;margin-right:5px}
 @media(max-width:520px){.grid{grid-template-columns:1fr}.container{padding:12px}}
 </style>
 </head>
@@ -72,16 +73,16 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <div class="field">
 <label>GitHub Token</label>
 <input id="token" type="password" placeholder="GitHub Token">
-<div class="hint">لا تشارك التوكن. لا تستخدم هذه اللوحة على موقع عام إذا كان التوكن محفوظاً بها.</div>
+<div class="hint">لا تشارك التوكن ولا تضع هذه اللوحة في موقع عام.</div>
 </div>
 
 <button class="btn blue" onclick="saveConfig()">حفظ الإعدادات</button>
 <button class="btn gray" onclick="loadRemote()">🔄 جلب المحتوى من GitHub</button>
 </div>
 
-<!-- إضافة المحتوى -->
+<!-- إضافة المحتوى الجديد -->
 <div class="section">
-<h3>➕ إضافة محتوى</h3>
+<h3>➕ إضافة محتوى جديد</h3>
 
 <div class="field">
 <label>الاسم</label>
@@ -125,16 +126,16 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 </div>
 
 <button class="btn gray full" onclick="addLocal()">إضافة للقائمة المؤقتة</button>
-<button class="btn red full" onclick="publish()">🚀 نشر على GitHub</button>
+<button class="btn red full" onclick="publish()">🚀 نشر المحتوى الجديد على GitHub</button>
 </div>
 
-<!-- المحتوى المؤقت -->
+<!-- قائمة المحتوى الجديد -->
 <div class="section">
-<h3>📋 القائمة المؤقتة</h3>
+<h3>📋 المحتوى الجديد المؤقت</h3>
 <div id="localList"></div>
 </div>
 
-<!-- إدارة المنشور -->
+<!-- إدارة المحتوى المنشور -->
 <div class="section">
 <h3>🛠 إدارة المحتوى المنشور</h3>
 
@@ -153,6 +154,30 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <div id="remoteList"></div>
 </div>
 
+<!-- تحديث روابط الفيديو -->
+<div class="section">
+<h3>🔗 تحديث روابط الفيديو</h3>
+
+<div class="hint">
+غيّر رابط الفيديو من قائمة المحتوى المنشور. ستظهر التعديلات هنا أولاً، ولن تُرسل إلى GitHub إلا بعد الضغط على زر النشر.
+</div>
+
+<div style="margin:12px 0">
+التحديثات المنتظرة:
+<span class="count" id="linkCount">0</span>
+</div>
+
+<div id="linkUpdateList"></div>
+
+<button class="btn purple full" id="publishLinksButton" onclick="publishLinkUpdates()">
+🚀 نشر تحديثات الروابط على GitHub
+</button>
+
+<button class="btn gray full" onclick="clearLinkUpdates()">
+إلغاء كل تحديثات الروابط المؤقتة
+</button>
+</div>
+
 <div id="status" class="status"></div>
 
 <textarea id="json" placeholder="JSON"></textarea>
@@ -162,12 +187,16 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 
 <script>
 const KEY="alawitv_admin_config_v2";
+
 let localItems=[];
 let remoteItems=[];
+let pendingLinkUpdates=[];
 let filter="all";
 let busy=false;
 
-function el(id){return document.getElementById(id)}
+function el(id){
+return document.getElementById(id);
+}
 
 function status(msg,color="#e5e7eb"){
 el("status").textContent=msg;
@@ -181,7 +210,7 @@ repo:el("repo").value.trim(),
 file:el("file").value.trim()||"videos.json",
 branch:el("branch").value.trim()||"main",
 token:el("token").value.trim()
-}
+};
 }
 
 function saveConfig(){
@@ -192,33 +221,45 @@ status("تم حفظ الإعدادات محلياً","#86efac");
 function loadConfig(){
 try{
 const c=JSON.parse(localStorage.getItem(KEY)||"{}");
+
 if(c.owner)el("owner").value=c.owner;
 if(c.repo)el("repo").value=c.repo;
 if(c.file)el("file").value=c.file;
 if(c.branch)el("branch").value=c.branch;
 if(c.token)el("token").value=c.token;
+
 }catch(e){}
 }
 
 function categoryChanged(){
-el("promotionBox").classList.toggle("hidden",el("category").value!=="مصارعة");
+el("promotionBox").classList.toggle(
+"hidden",
+el("category").value!=="مصارعة"
+);
 }
 
 function setPromotion(v,b){
 el("promotion").value=v;
-document.querySelectorAll(".tag").forEach(x=>x.classList.remove("active"));
+
+document.querySelectorAll("#promotionBox .tag")
+.forEach(x=>x.classList.remove("active"));
+
 if(b)b.classList.add("active");
 }
 
 function finalCategory(){
 let c=el("category").value;
 let p=el("promotion").value.trim();
-return c==="مصارعة"&&p?`مصارعة - ${p}`:c;
+
+return c==="مصارعة"&&p
+?`مصارعة - ${p}`
+:c;
 }
 
 function makeEntry(){
 let title=el("title").value.trim();
 let videoUrl=el("url").value.trim();
+
 if(!title||!videoUrl)return null;
 
 return{
@@ -232,50 +273,73 @@ category:finalCategory()
 }
 
 function clearForm(){
-["title","description","image","url","promotion"].forEach(x=>el(x).value="");
-document.querySelectorAll(".tag").forEach(x=>x.classList.remove("active"));
+["title","description","image","url","promotion"]
+.forEach(x=>el(x).value="");
+
+document.querySelectorAll("#promotionBox .tag")
+.forEach(x=>x.classList.remove("active"));
 }
 
 function duplicate(list,item){
 return list.some(x=>
-String(x.title||"").trim().toLowerCase()===item.title.trim().toLowerCase()&&
-String(x.category||"").trim().toLowerCase()===item.category.trim().toLowerCase()
+String(x.title||"").trim().toLowerCase()===
+item.title.trim().toLowerCase()&&
+String(x.category||"").trim().toLowerCase()===
+item.category.trim().toLowerCase()
 );
 }
 
 function addLocal(){
 let item=makeEntry();
-if(!item){status("أدخل الاسم ورابط الفيديو أولاً","#fca5a5");return}
+
+if(!item){
+status("أدخل الاسم ورابط الفيديو أولاً","#fca5a5");
+return;
+}
+
 if(duplicate(localItems,item)||duplicate(remoteItems,item)){
 status("هذا المحتوى موجود مسبقاً بنفس الاسم والقسم","#fca5a5");
 return;
 }
+
 localItems.push(item);
 renderLocal();
 renderJSON();
 clearForm();
+
 status("تمت الإضافة إلى القائمة المؤقتة","#86efac");
 }
 
 function renderLocal(){
 let box=el("localList");
 box.innerHTML="";
+
 if(!localItems.length){
 box.innerHTML='<div class="meta">القائمة المؤقتة فارغة.</div>';
 return;
 }
+
 localItems.forEach((v,i)=>{
 let c=document.createElement("div");
 c.className="card";
+
 let title=document.createElement("strong");
 title.textContent=v.title;
+
 let meta=document.createElement("div");
 meta.className="meta";
 meta.textContent=v.category;
+
 let del=document.createElement("button");
 del.className="btn red";
 del.textContent="حذف";
-del.onclick=()=>{localItems.splice(i,1);renderLocal();renderJSON()};
+
+del.onclick=()=>{
+localItems.splice(i,1);
+renderLocal();
+renderJSON();
+};
+
 c.append(title,meta,del);
 box.appendChild(c);
 });
@@ -285,14 +349,9 @@ function renderJSON(){
 el("json").value=JSON.stringify({videos:localItems},null,2);
 }
 
-function escapeHTML(s){
-return String(s??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c])));
-}
-
 function api(){
 let c=config();
+
 return{
 url:`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.file.split("/").map(encodeURIComponent).join("/")}`,
 headers:{
@@ -313,38 +372,90 @@ return new TextDecoder().decode(bytes);
 function b64encode(s){
 let bytes=new TextEncoder().encode(s);
 let bin="";
+
 bytes.forEach(b=>bin+=String.fromCharCode(b));
+
 return btoa(bin);
 }
 
 function extract(obj){
 if(Array.isArray(obj))return obj;
 if(Array.isArray(obj?.videos))return obj.videos;
-return[];
+
+throw Error("تنسيق ملف videos.json غير صحيح، لم يتم تغيير الملف.");
 }
 
 async function readRemote(){
 let a=api();
-let res=await fetch(a.url+"?ref="+encodeURIComponent(a.branch),{headers:a.headers});
-if(res.status===404)return{...a,videos:[],sha:null};
-if(!res.ok)throw Error("فشل جلب الملف: "+res.status);
+
+let res=await fetch(
+a.url+"?ref="+encodeURIComponent(a.branch),
+{headers:a.headers}
+);
+
+if(res.status===404){
+return{...a,videos:[],sha:null};
+}
+
+if(!res.ok){
+throw Error("فشل جلب الملف: "+res.status);
+}
+
 let f=await res.json();
 let parsed=JSON.parse(b64decode(f.content||""));
-return{...a,videos:extract(parsed),sha:f.sha};
+
+return{
+...a,
+videos:extract(parsed),
+sha:f.sha
+};
+}
+
+async function writeRemote(videos,message,sha){
+let a=api();
+
+let body={
+message,
+content:b64encode(JSON.stringify({videos},null,2)+"\n"),
+branch:a.branch
+};
+
+if(sha)body.sha=sha;
+
+let res=await fetch(a.url,{
+method:"PUT",
+headers:a.headers,
+body:JSON.stringify(body)
+});
+
+if(!res.ok){
+let err=await res.json().catch(()=>({}));
+throw Error(err.message||"فشل الحفظ "+res.status);
+}
 }
 
 async function loadRemote(){
 if(busy)return;
+
 busy=true;
 status("جاري جلب البيانات من GitHub...","#93c5fd");
+
 try{
 let d=await readRemote();
+
 remoteItems=d.videos;
+
 renderRemote();
 renderJSONRemote();
+renderLinkUpdates();
+
 status("تم جلب "+remoteItems.length+" عنصر بنجاح","#86efac");
-}catch(e){status("خطأ: "+e.message,"#fca5a5")}
-finally{busy=false}
+
+}catch(e){
+status("خطأ: "+e.message,"#fca5a5");
+}finally{
+busy=false;
+}
 }
 
 function renderJSONRemote(){
@@ -354,13 +465,19 @@ el("json").value=JSON.stringify({videos:remoteItems},null,2);
 function renderRemote(){
 let box=el("remoteList");
 box.innerHTML="";
+
 let q=el("search").value.trim().toLowerCase();
 
 let list=remoteItems.map((v,i)=>({v,i})).filter(x=>{
 let cat=String(x.v.category||"");
 let title=String(x.v.title||"").toLowerCase();
+
 let matchesFilter=filter==="all"||cat.includes(filter);
-return matchesFilter&&(title.includes(q)||cat.toLowerCase().includes(q));
+
+return matchesFilter&&(
+title.includes(q)||
+cat.toLowerCase().includes(q)
+);
 });
 
 if(!list.length){
@@ -377,76 +494,279 @@ title.textContent=v.title||"بدون اسم";
 
 let meta=document.createElement("div");
 meta.className="meta";
-meta.textContent=(v.category||"غير مصنف")+" | ID: "+(v.id||"بدون ID");
+meta.textContent=(v.category||"غير مصنف")+
+" | ID: "+(v.id||"بدون ID");
 
 let actions=document.createElement("div");
 actions.className="actions";
 
 let edit=document.createElement("button");
 edit.className="blue";
-edit.textContent="✏️ تعديل كامل";
+edit.textContent="🔗 تعديل الرابط";
 edit.onclick=()=>editRemote(i);
 
-let del=document.createElement("button");
-del.className="red";
-del.textContent="🗑 حذف";
-del.onclick=()=>deleteRemote(i);
-
-actions.append(edit,del);
+actions.append(edit);
 card.append(title,meta,actions);
+
 box.appendChild(card);
 });
 }
 
 function setFilter(f,b){
 filter=f;
-document.querySelectorAll(".filters .tag").forEach(x=>x.classList.remove("active"));
+
+document.querySelectorAll(".filters .tag")
+.forEach(x=>x.classList.remove("active"));
+
 if(b)b.classList.add("active");
+
 renderRemote();
 }
 
-async function writeRemote(videos,message,sha){
-let a=api();
-let body={
-message,
-content:b64encode(JSON.stringify({videos},null,2)+"\n"),
-branch:a.branch
-};
-if(sha)body.sha=sha;
+/* تعديل الرابط: إضافة إلى قائمة مؤقتة فقط */
+function editRemote(index){
+if(busy)return;
 
-let res=await fetch(a.url,{
-method:"PUT",
-headers:a.headers,
-body:JSON.stringify(body)
+let item=remoteItems[index];
+if(!item)return;
+
+let oldUrl=String(item.videoUrl||"");
+
+let newUrl=prompt(
+"أدخل رابط الفيديو الجديد:\n"+(item.title||""),
+oldUrl
+);
+
+if(newUrl===null)return;
+
+newUrl=newUrl.trim();
+
+if(!newUrl){
+alert("رابط الفيديو مطلوب.");
+return;
+}
+
+if(newUrl===oldUrl){
+status("الرابط لم يتغير.");
+return;
+}
+
+let existing=pendingLinkUpdates.find(x=>
+x.id===item.id&&
+x.title===item.title&&
+x.category===item.category
+);
+
+if(existing){
+existing.newVideoUrl=newUrl;
+}else{
+pendingLinkUpdates.push({
+id:item.id,
+title:item.title,
+category:item.category,
+oldVideoUrl:oldUrl,
+newVideoUrl:newUrl
 });
-if(!res.ok){
-let err=await res.json().catch(()=>({}));
-throw Error(err.message||"فشل الحفظ "+res.status);
+}
+
+renderLinkUpdates();
+
+status("تم تجهيز الرابط الجديد. لم يتم نشره بعد.","#c4b5fd");
+}
+
+/* عرض تحديثات الروابط المنتظرة */
+function renderLinkUpdates(){
+let box=el("linkUpdateList");
+box.innerHTML="";
+
+el("linkCount").textContent=pendingLinkUpdates.length;
+
+el("publishLinksButton").disabled=
+pendingLinkUpdates.length===0||busy;
+
+if(!pendingLinkUpdates.length){
+box.innerHTML='<div class="meta">ماكو تحديثات روابط منتظرة.</div>';
+return;
+}
+
+pendingLinkUpdates.forEach((v,i)=>{
+let card=document.createElement("div");
+card.className="card";
+
+let title=document.createElement("strong");
+title.textContent=v.title||"بدون اسم";
+
+let category=document.createElement("div");
+category.className="meta";
+category.textContent=v.category||"غير مصنف";
+
+let oldLabel=document.createElement("div");
+oldLabel.className="meta";
+oldLabel.textContent="الرابط القديم: "+(v.oldVideoUrl||"فارغ");
+
+let newLabel=document.createElement("div");
+newLabel.className="meta";
+newLabel.style.color="#86efac";
+newLabel.textContent="الرابط الجديد: "+v.newVideoUrl;
+
+let del=document.createElement("button");
+del.className="btn red";
+del.textContent="إلغاء هذا التحديث";
+
+del.onclick=()=>{
+pendingLinkUpdates.splice(i,1);
+renderLinkUpdates();
+status("تم إلغاء التحديث المؤقت.");
+};
+
+card.append(title,category,oldLabel,newLabel,del);
+box.appendChild(card);
+});
+}
+
+/* نشر تحديثات الروابط فقط */
+async function publishLinkUpdates(){
+if(busy)return;
+
+if(!pendingLinkUpdates.length){
+status("ماكو تحديثات روابط للنشر.","#fca5a5");
+return;
+}
+
+let c=config();
+
+if(!c.owner||!c.repo||!c.token){
+status("أدخل إعدادات GitHub أولاً.","#fca5a5");
+return;
+}
+
+if(!confirm(
+"هل تريد نشر "+pendingLinkUpdates.length+
+" تحديث رابط على GitHub؟"
+)){
+return;
+}
+
+busy=true;
+renderLinkUpdates();
+
+status("جاري نشر تحديثات الروابط...","#c4b5fd");
+
+try{
+let d=await readRemote();
+let updated=0;
+
+for(let change of pendingLinkUpdates){
+
+let target=d.videos.findIndex(x=>
+change.id!==undefined&&
+String(x.id)===String(change.id)
+);
+
+if(target===-1){
+target=d.videos.findIndex(x=>
+String(x.title||"")===String(change.title||"")&&
+String(x.category||"")===String(change.category||"")
+);
+}
+
+if(target===-1){
+throw Error("لم يتم العثور على المحتوى: "+change.title);
+}
+
+let currentUrl=String(d.videos[target].videoUrl||"");
+
+/* منع الكتابة فوق تغيير أحدث */
+if(currentUrl!==change.oldVideoUrl){
+throw Error(
+"الرابط تغير مسبقاً للمحتوى: "+change.title+
+". أعد جلب المحتوى وحاول مرة أخرى."
+);
+}
+
+d.videos[target]={
+...d.videos[target],
+videoUrl:change.newVideoUrl
+};
+
+updated++;
+}
+
+await writeRemote(
+d.videos,
+"Update video links in alawiTV",
+d.sha
+);
+
+remoteItems=d.videos;
+pendingLinkUpdates=[];
+
+renderRemote();
+renderJSONRemote();
+renderLinkUpdates();
+
+status("تم نشر "+updated+" رابط بنجاح على GitHub","#86efac");
+
+}catch(e){
+status("فشل نشر الروابط: "+e.message,"#fca5a5");
+}finally{
+busy=false;
+renderLinkUpdates();
 }
 }
 
+function clearLinkUpdates(){
+if(busy)return;
+
+if(!pendingLinkUpdates.length){
+status("قائمة تحديثات الروابط فارغة.");
+return;
+}
+
+if(!confirm("هل تريد إلغاء كل تحديثات الروابط المؤقتة؟")){
+return;
+}
+
+pendingLinkUpdates=[];
+renderLinkUpdates();
+
+status("تم إلغاء جميع تحديثات الروابط المؤقتة.");
+}
+
+/* نشر محتوى جديد */
 async function publish(){
 if(busy)return;
+
 let c=config();
+
 if(!c.owner||!c.repo||!c.token){
 status("أدخل إعدادات GitHub واحفظها أولاً","#fca5a5");
 return;
 }
 
 let pending=[...localItems];
+
 let formTitle=el("title").value.trim();
 let formUrl=el("url").value.trim();
 
 if(formTitle||formUrl){
 let x=makeEntry();
-if(!x){status("أدخل الاسم ورابط الفيديو","#fca5a5");return}
+
+if(!x){
+status("أدخل الاسم ورابط الفيديو","#fca5a5");
+return;
+}
+
 pending.push(x);
 }
 
-if(!pending.length){status("أضف محتوى قبل النشر","#fca5a5");return}
+if(!pending.length){
+status("أضف محتوى قبل النشر","#fca5a5");
+return;
+}
 
 busy=true;
-status("جاري النشر...","#93c5fd");
+status("جاري نشر المحتوى الجديد...","#93c5fd");
 
 try{
 let d=await readRemote();
@@ -456,111 +776,42 @@ for(let x of pending){
 if(duplicate(combined,x)){
 throw Error("محتوى مكرر: "+x.title+" ("+x.category+")");
 }
+
 combined.push(x);
 }
 
-await writeRemote(combined,"Publish content to alawiTV",d.sha);
+await writeRemote(
+combined,
+"Publish new content to alawiTV",
+d.sha
+);
+
 remoteItems=combined;
 localItems=[];
+
 renderLocal();
 renderRemote();
 renderJSONRemote();
 clearForm();
-status("تم النشر بنجاح. عدد المحتويات: "+combined.length,"#86efac");
-}catch(e){status("فشل النشر: "+e.message,"#fca5a5")}
-finally{busy=false}
+
+status("تم نشر المحتوى الجديد بنجاح. العدد: "+combined.length,"#86efac");
+
+}catch(e){
+status("فشل النشر: "+e.message,"#fca5a5");
+}finally{
+busy=false;
+}
 }
 
-async function editRemote(index){
-if(busy)return;
-let item=remoteItems[index];
-if(!item)return;
+/* نسخ JSON */
+async function copyJSON(){
+let text=el("json").value;
 
-let title=prompt("اسم المحتوى:",item.title||"");
-if(title===null)return;
-title=title.trim();
-if(!title){alert("الاسم مطلوب");return}
-
-let description=prompt("الوصف:",item.description||"");
-if(description===null)return;
-
-let category=prompt("القسم:",item.category||"أفلام");
-if(category===null)return;
-
-let thumbnailUrl=prompt("رابط الصورة:",item.thumbnailUrl||item.imageUrl||"");
-if(thumbnailUrl===null)return;
-
-let videoUrl=prompt("رابط الفيديو:",item.videoUrl||"");
-if(videoUrl===null)return;
-videoUrl=videoUrl.trim();
-if(!videoUrl){alert("رابط الفيديو مطلوب");return}
-
-if(remoteItems.some((x,i)=>i!==index&&
-String(x.title||"").toLowerCase()===title.toLowerCase()&&
-String(x.category||"").toLowerCase()===category.toLowerCase())){
-alert("يوجد محتوى آخر بنفس الاسم والقسم");
+if(!text){
+status("ماكو JSON لنسخه","#fca5a5");
 return;
 }
 
-busy=true;
-status("جاري حفظ التعديلات...","#93c5fd");
-
-try{
-let d=await readRemote();
-let target=d.videos.findIndex(x=>String(x.id)===String(item.id));
-if(target===-1){
-target=d.videos.findIndex(x=>x.title===item.title&&x.category===item.category);
-}
-if(target===-1)throw Error("لم يتم العثور على المحتوى في GitHub");
-
-d.videos[target]={
-...d.videos[target],
-title,
-description,
-category,
-thumbnailUrl,
-videoUrl
-};
-
-await writeRemote(d.videos,"Edit content in alawiTV",d.sha);
-remoteItems=d.videos;
-renderRemote();
-renderJSONRemote();
-status("تم تعديل المحتوى وحفظه بنجاح","#86efac");
-}catch(e){status("خطأ أثناء التعديل: "+e.message,"#fca5a5")}
-finally{busy=false}
-}
-
-async function deleteRemote(index){
-if(busy)return;
-let item=remoteItems[index];
-if(!item)return;
-
-if(!confirm("هل أنت متأكد من حذف:\n"+item.title+"\n\nهذا الحذف سيؤثر على ملف GitHub."))return;
-
-busy=true;
-status("جاري حذف المحتوى...","#93c5fd");
-
-try{
-let d=await readRemote();
-let target=d.videos.findIndex(x=>String(x.id)===String(item.id));
-if(target===-1)target=d.videos.findIndex(x=>x.title===item.title&&x.category===item.category);
-if(target===-1)throw Error("لم يتم العثور على المحتوى");
-
-d.videos.splice(target,1);
-await writeRemote(d.videos,"Delete content from alawiTV",d.sha);
-
-remoteItems=d.videos;
-renderRemote();
-renderJSONRemote();
-status("تم حذف المحتوى بنجاح","#86efac");
-}catch(e){status("فشل الحذف: "+e.message,"#fca5a5")}
-finally{busy=false}
-}
-
-async function copyJSON(){
-let text=el("json").value;
-if(!text){status("ماكو JSON لنسخه","#fca5a5");return}
 try{
 await navigator.clipboard.writeText(text);
 status("تم نسخ JSON","#86efac");
@@ -571,9 +822,12 @@ status("تم النسخ","#86efac");
 }
 }
 
+/* تشغيل أولي */
 loadConfig();
 renderLocal();
+renderLinkUpdates();
 categoryChanged();
+
 </script>
 </body>
 </html>
