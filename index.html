@@ -19,6 +19,7 @@ input,select,textarea{width:100%;padding:11px;border-radius:8px;border:1px solid
 input:focus,select:focus,textarea:focus{outline:none;border-color:#ef4444}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
 .btn{border:0;border-radius:8px;padding:11px;color:#fff;font-weight:bold;font-size:13px}
 .blue{background:#2563eb}
 .red{background:#dc2626}
@@ -30,15 +31,19 @@ button{cursor:pointer}
 .tag{background:#222733;border:1px solid #3b4252;color:white;border-radius:20px;padding:7px 12px}
 .tag.active{background:#dc2626}
 .card{background:#12151b;border:1px solid #292f3b;border-radius:9px;padding:11px;margin-top:9px}
-.meta{font-size:12px;color:#9ca3af;margin-top:5px;word-break:break-word}
+.meta{font-size:12px;color:#9ca3af;margin-top:5px;word-break:break-word;line-height:1.6}
 .actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
 .actions button{padding:8px 11px;border:0;border-radius:7px;color:white;font-size:12px}
 .status{min-height:22px;margin:10px 0;font-size:13px;line-height:1.6}
 textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;margin-top:12px}
 .hidden{display:none!important}
-.hint{font-size:11px;color:#9ca3af;line-height:1.6;margin-top:5px}
+.hint{font-size:11px;color:#9ca3af;line-height:1.7;margin-top:5px}
 .count{display:inline-block;background:#7c3aed;padding:4px 9px;border-radius:15px;font-size:12px;margin-right:5px}
-@media(max-width:520px){.grid{grid-template-columns:1fr}.container{padding:12px}}
+hr{border:0;border-top:1px solid #292f3b;margin:14px 0}
+@media(max-width:520px){
+.grid{grid-template-columns:1fr}
+.container{padding:12px}
+}
 </style>
 </head>
 
@@ -56,14 +61,17 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <label>Owner</label>
 <input id="owner" value="alisonecena-ops">
 </div>
+
 <div class="field">
 <label>Repository</label>
 <input id="repo" value="-alawitv-data-v2">
 </div>
+
 <div class="field">
 <label>ملف البيانات</label>
 <input id="file" value="videos.json">
 </div>
+
 <div class="field">
 <label>Branch</label>
 <input id="branch" value="main">
@@ -72,21 +80,23 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 
 <div class="field">
 <label>GitHub Token</label>
-<input id="token" type="password" placeholder="GitHub Token">
-<div class="hint">لا تشارك التوكن ولا تضع هذه اللوحة في موقع عام.</div>
+<input id="token" type="password" placeholder="أدخل GitHub Token">
+<div class="hint">
+التوكن لا يُحفظ في المتصفح. لا تشاركه مع أحد ولا تضع هذه اللوحة في موقع عام.
+</div>
 </div>
 
 <button class="btn blue" onclick="saveConfig()">حفظ الإعدادات</button>
 <button class="btn gray" onclick="loadRemote()">🔄 جلب المحتوى من GitHub</button>
 </div>
 
-<!-- إضافة المحتوى الجديد -->
+<!-- إضافة المحتوى -->
 <div class="section">
 <h3>➕ إضافة محتوى جديد</h3>
 
 <div class="field">
 <label>الاسم</label>
-<input id="title" placeholder="اسم الفيلم أو المسلسل أو القناة">
+<input id="title" placeholder="اسم الفيلم أو المسلسل أو عرض المصارعة">
 </div>
 
 <div class="field">
@@ -95,6 +105,7 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 </div>
 
 <div class="grid">
+
 <div class="field">
 <label>القسم</label>
 <select id="category" onchange="categoryChanged()">
@@ -108,11 +119,18 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <div class="field hidden" id="promotionBox">
 <label>اتحاد المصارعة</label>
 <input id="promotion" placeholder="WWE أو AEW">
+
 <div class="tagrow">
-<button class="tag" onclick="setPromotion('WWE',this)">WWE</button>
-<button class="tag" onclick="setPromotion('AEW',this)">AEW</button>
+<button type="button" class="tag" onclick="setPromotion('WWE',this)">WWE</button>
+<button type="button" class="tag" onclick="setPromotion('AEW',this)">AEW</button>
 </div>
 </div>
+
+</div>
+
+<div class="field hidden" id="episodeBox">
+<label>عدد الحلقات</label>
+<input id="episodeCount" type="number" min="1" placeholder="مثلاً 10">
 </div>
 
 <div class="field">
@@ -125,21 +143,33 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <input id="url" type="url" placeholder="https://...">
 </div>
 
-<button class="btn gray full" onclick="addLocal()">إضافة للقائمة المؤقتة</button>
-<button class="btn red full" onclick="publish()">🚀 نشر المحتوى الجديد على GitHub</button>
+<button class="btn gray full" onclick="addLocal()">إضافة للقائمة المحفوظة مؤقتاً</button>
+<button class="btn red full" onclick="publish()">🚀 نشر المحتوى على GitHub</button>
+
+<div class="hint">
+المحتوى المؤقت يُحفظ على هذا الجهاز والمتصفح. أما النشر على GitHub فيجعله متاحاً للتطبيق.
+</div>
 </div>
 
-<!-- قائمة المحتوى الجديد -->
+<!-- المحتوى المؤقت -->
 <div class="section">
-<h3>📋 المحتوى الجديد المؤقت</h3>
+<h3>📋 المحتوى الجديد المحفوظ مؤقتاً</h3>
+<div class="meta">هذا القسم يحتفظ بالمحتوى حتى بعد إغلاق الصفحة أو إعادة فتحها على نفس الجهاز والمتصفح.</div>
+
 <div id="localList"></div>
+
+<button class="btn gray full" onclick="clearLocalItems()">حذف كل المحتوى المؤقت</button>
 </div>
 
 <!-- إدارة المحتوى المنشور -->
 <div class="section">
-<h3>🛠 إدارة المحتوى المنشور</h3>
+<h3>🛠 المحتوى المنشور والقابل للتعديل</h3>
 
-<button class="btn blue full" onclick="loadRemote()">جلب / تحديث المحتوى</button>
+<div class="hint">
+كل فيلم أو مسلسل أو عرض مصارعة تنشره يبقى هنا بعد جلب بيانات GitHub. تگدر ترجعله وتغيّر رابطه بأي وقت.
+</div>
+
+<button class="btn blue full" onclick="loadRemote()">🔄 جلب / تحديث المحتوى المنشور</button>
 
 <div class="filters">
 <button class="tag active" onclick="setFilter('all',this)">الكل</button>
@@ -154,12 +184,12 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 <div id="remoteList"></div>
 </div>
 
-<!-- تحديث روابط الفيديو -->
+<!-- تحديث الروابط -->
 <div class="section">
 <h3>🔗 تحديث روابط الفيديو</h3>
 
 <div class="hint">
-غيّر رابط الفيديو من قائمة المحتوى المنشور. ستظهر التعديلات هنا أولاً، ولن تُرسل إلى GitHub إلا بعد الضغط على زر النشر.
+عندما ينتهي رابط فيلم أو حلقة أو عرض مصارعة، عدّل رابطه من قائمة المحتوى المنشور. سيظهر التغيير هنا قبل نشره.
 </div>
 
 <div style="margin:12px 0">
@@ -186,7 +216,10 @@ textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;ma
 </div>
 
 <script>
-const KEY="alawitv_admin_config_v2";
+const CONFIG_KEY="alawitv_admin_config_v3";
+const DRAFT_KEY="alawitv_saved_drafts_v3";
+const UPDATE_KEY="alawitv_saved_link_updates_v3";
+const CACHE_KEY="alawitv_remote_cache_v3";
 
 let localItems=[];
 let remoteItems=[];
@@ -203,6 +236,33 @@ el("status").textContent=msg;
 el("status").style.color=color;
 }
 
+function saveState(){
+try{
+localStorage.setItem(DRAFT_KEY,JSON.stringify(localItems));
+localStorage.setItem(UPDATE_KEY,JSON.stringify(pendingLinkUpdates));
+localStorage.setItem(CACHE_KEY,JSON.stringify(remoteItems));
+}catch(e){
+status("تعذر الحفظ المحلي. قد تكون مساحة المتصفح ممتلئة.","#fca5a5");
+}
+}
+
+function restoreState(){
+try{
+localItems=JSON.parse(localStorage.getItem(DRAFT_KEY)||"[]");
+if(!Array.isArray(localItems))localItems=[];
+}catch(e){localItems=[];}
+
+try{
+pendingLinkUpdates=JSON.parse(localStorage.getItem(UPDATE_KEY)||"[]");
+if(!Array.isArray(pendingLinkUpdates))pendingLinkUpdates=[];
+}catch(e){pendingLinkUpdates=[];}
+
+try{
+remoteItems=JSON.parse(localStorage.getItem(CACHE_KEY)||"[]");
+if(!Array.isArray(remoteItems))remoteItems=[];
+}catch(e){remoteItems=[];}
+}
+
 function config(){
 return{
 owner:el("owner").value.trim(),
@@ -214,46 +274,55 @@ token:el("token").value.trim()
 }
 
 function saveConfig(){
-localStorage.setItem(KEY,JSON.stringify(config()));
-status("تم حفظ الإعدادات محلياً","#86efac");
+let c=config();
+
+localStorage.setItem(CONFIG_KEY,JSON.stringify({
+owner:c.owner,
+repo:c.repo,
+file:c.file,
+branch:c.branch
+}));
+
+status("تم حفظ إعدادات المستودع محلياً. أدخل التوكن عند الحاجة.","#86efac");
 }
 
 function loadConfig(){
 try{
-const c=JSON.parse(localStorage.getItem(KEY)||"{}");
+const c=JSON.parse(localStorage.getItem(CONFIG_KEY)||"{}");
 
 if(c.owner)el("owner").value=c.owner;
 if(c.repo)el("repo").value=c.repo;
 if(c.file)el("file").value=c.file;
 if(c.branch)el("branch").value=c.branch;
-if(c.token)el("token").value=c.token;
 
 }catch(e){}
 }
 
 function categoryChanged(){
-el("promotionBox").classList.toggle(
-"hidden",
-el("category").value!=="مصارعة"
-);
+let category=el("category").value;
+
+el("promotionBox").classList.toggle("hidden",category!=="مصارعة");
+el("episodeBox").classList.toggle("hidden",category!=="مسلسلات");
 }
 
-function setPromotion(v,b){
-el("promotion").value=v;
+function setPromotion(value,button){
+el("promotion").value=value;
 
 document.querySelectorAll("#promotionBox .tag")
 .forEach(x=>x.classList.remove("active"));
 
-if(b)b.classList.add("active");
+if(button)button.classList.add("active");
 }
 
 function finalCategory(){
-let c=el("category").value;
-let p=el("promotion").value.trim();
+let category=el("category").value;
+let promotion=el("promotion").value.trim();
 
-return c==="مصارعة"&&p
-?`مصارعة - ${p}`
-:c;
+if(category==="مصارعة"&&promotion){
+return "مصارعة - "+promotion;
+}
+
+return category;
 }
 
 function makeEntry(){
@@ -262,22 +331,39 @@ let videoUrl=el("url").value.trim();
 
 if(!title||!videoUrl)return null;
 
-return{
+let item={
 id:String(Date.now())+"_"+Math.random().toString(36).slice(2,7),
-title,
+title:title,
 description:el("description").value.trim()||title,
-videoUrl,
+videoUrl:videoUrl,
 thumbnailUrl:el("image").value.trim(),
 category:finalCategory()
 };
+
+if(el("category").value==="مسلسلات"){
+let count=parseInt(el("episodeCount").value,10);
+if(Number.isFinite(count)&&count>0){
+item.episodeCount=count;
+}
+}
+
+return item;
 }
 
 function clearForm(){
-["title","description","image","url","promotion"]
-.forEach(x=>el(x).value="");
+[
+"title",
+"description",
+"image",
+"url",
+"promotion",
+"episodeCount"
+].forEach(id=>el(id).value="");
 
 document.querySelectorAll("#promotionBox .tag")
 .forEach(x=>x.classList.remove("active"));
+
+categoryChanged();
 }
 
 function duplicate(list,item){
@@ -289,25 +375,29 @@ item.category.trim().toLowerCase()
 );
 }
 
+/* إضافة مؤقتة مع حفظ تلقائي */
 function addLocal(){
 let item=makeEntry();
 
 if(!item){
-status("أدخل الاسم ورابط الفيديو أولاً","#fca5a5");
+status("أدخل الاسم ورابط الفيديو أولاً.","#fca5a5");
 return;
 }
 
 if(duplicate(localItems,item)||duplicate(remoteItems,item)){
-status("هذا المحتوى موجود مسبقاً بنفس الاسم والقسم","#fca5a5");
+status("هذا المحتوى موجود مسبقاً بنفس الاسم والقسم.","#fca5a5");
 return;
 }
 
 localItems.push(item);
+
+saveState();
 renderLocal();
 renderJSON();
+
 clearForm();
 
-status("تمت الإضافة إلى القائمة المؤقتة","#86efac");
+status("تمت الإضافة والحفظ المؤقت بنجاح.","#86efac");
 }
 
 function renderLocal(){
@@ -315,62 +405,141 @@ let box=el("localList");
 box.innerHTML="";
 
 if(!localItems.length){
-box.innerHTML='<div class="meta">القائمة المؤقتة فارغة.</div>';
+box.innerHTML='<div class="meta">ماكو محتوى مؤقت محفوظ حالياً.</div>';
 return;
 }
 
-localItems.forEach((v,i)=>{
-let c=document.createElement("div");
-c.className="card";
+localItems.forEach((item,index)=>{
+let card=document.createElement("div");
+card.className="card";
 
 let title=document.createElement("strong");
-title.textContent=v.title;
+title.textContent=item.title||"بدون اسم";
 
 let meta=document.createElement("div");
 meta.className="meta";
-meta.textContent=v.category;
+meta.textContent=item.category||"غير مصنف";
+
+let details=document.createElement("div");
+details.className="meta";
+
+if(item.episodeCount){
+details.textContent="عدد الحلقات: "+item.episodeCount;
+}
+
+let actions=document.createElement("div");
+actions.className="actions";
+
+let edit=document.createElement("button");
+edit.className="blue";
+edit.textContent="تعديل";
+edit.onclick=()=>editLocal(index);
 
 let del=document.createElement("button");
-del.className="btn red";
+del.className="red";
 del.textContent="حذف";
-
 del.onclick=()=>{
-localItems.splice(i,1);
+localItems.splice(index,1);
+saveState();
 renderLocal();
 renderJSON();
+status("تم حذف العنصر المؤقت.");
 };
 
-c.append(title,meta,del);
-box.appendChild(c);
+actions.append(edit,del);
+card.append(title,meta,details,actions);
+box.appendChild(card);
 });
+}
+
+function editLocal(index){
+let item=localItems[index];
+if(!item)return;
+
+el("title").value=item.title||"";
+el("description").value=item.description||"";
+el("url").value=item.videoUrl||"";
+el("image").value=item.thumbnailUrl||"";
+
+let category=String(item.category||"أفلام");
+
+if(category.startsWith("مصارعة")){
+el("category").value="مصارعة";
+el("promotion").value=category.includes("AEW")?"AEW":
+category.includes("WWE")?"WWE":"";
+}else if(category.includes("مسلسلات")){
+el("category").value="مسلسلات";
+}else if(category.includes("قنوات")){
+el("category").value="قنوات";
+}else{
+el("category").value="أفلام";
+}
+
+el("episodeCount").value=item.episodeCount||"";
+categoryChanged();
+
+localItems.splice(index,1);
+saveState();
+renderLocal();
+
+status("تم تحميل بيانات العنصر للتعديل. اضغط إضافة للقائمة المؤقتة بعد الانتهاء.","#93c5fd");
+
+window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function clearLocalItems(){
+if(!localItems.length){
+status("القائمة المؤقتة فارغة.");
+return;
+}
+
+if(!confirm("هل تريد حذف كل المحتوى المؤقت؟"))return;
+
+localItems=[];
+saveState();
+renderLocal();
+renderJSON();
+
+status("تم حذف المحتوى المؤقت.");
 }
 
 function renderJSON(){
 el("json").value=JSON.stringify({videos:localItems},null,2);
 }
 
+/* GitHub API */
 function api(){
 let c=config();
 
+if(!c.owner||!c.repo||!c.token){
+throw Error("أدخل Owner وRepository وGitHub Token أولاً.");
+}
+
 return{
-url:`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.file.split("/").map(encodeURIComponent).join("/")}`,
+url:"https://api.github.com/repos/"+
+encodeURIComponent(c.owner)+"/"+
+encodeURIComponent(c.repo)+
+"/contents/"+
+c.file.split("/").map(encodeURIComponent).join("/"),
+
 headers:{
 "Authorization":"Bearer "+c.token,
 "Accept":"application/vnd.github+json",
 "Content-Type":"application/json"
 },
+
 branch:c.branch
 };
 }
 
-function b64decode(s){
-let bin=atob(s.replace(/\n/g,""));
+function b64decode(value){
+let bin=atob(value.replace(/\n/g,""));
 let bytes=Uint8Array.from(bin,x=>x.charCodeAt(0));
 return new TextDecoder().decode(bytes);
 }
 
-function b64encode(s){
-let bytes=new TextEncoder().encode(s);
+function b64encode(value){
+let bytes=new TextEncoder().encode(value);
 let bin="";
 
 bytes.forEach(b=>bin+=String.fromCharCode(b));
@@ -382,7 +551,7 @@ function extract(obj){
 if(Array.isArray(obj))return obj;
 if(Array.isArray(obj?.videos))return obj.videos;
 
-throw Error("تنسيق ملف videos.json غير صحيح، لم يتم تغيير الملف.");
+throw Error("تنسيق videos.json غير صحيح. لم يتم تغيير الملف.");
 }
 
 async function readRemote(){
@@ -401,13 +570,13 @@ if(!res.ok){
 throw Error("فشل جلب الملف: "+res.status);
 }
 
-let f=await res.json();
-let parsed=JSON.parse(b64decode(f.content||""));
+let file=await res.json();
+let parsed=JSON.parse(b64decode(file.content||""));
 
 return{
 ...a,
 videos:extract(parsed),
-sha:f.sha
+sha:file.sha
 };
 }
 
@@ -415,8 +584,8 @@ async function writeRemote(videos,message,sha){
 let a=api();
 
 let body={
-message,
-content:b64encode(JSON.stringify({videos},null,2)+"\n"),
+message:message,
+content:b64encode(JSON.stringify({videos:videos},null,2)+"\n"),
 branch:a.branch
 };
 
@@ -429,11 +598,12 @@ body:JSON.stringify(body)
 });
 
 if(!res.ok){
-let err=await res.json().catch(()=>({}));
-throw Error(err.message||"فشل الحفظ "+res.status);
+let error=await res.json().catch(()=>({}));
+throw Error(error.message||"فشل الحفظ: "+res.status);
 }
 }
 
+/* جلب المحتوى المنشور */
 async function loadRemote(){
 if(busy)return;
 
@@ -441,20 +611,22 @@ busy=true;
 status("جاري جلب البيانات من GitHub...","#93c5fd");
 
 try{
-let d=await readRemote();
+let data=await readRemote();
 
-remoteItems=d.videos;
+remoteItems=data.videos;
 
+saveState();
 renderRemote();
 renderJSONRemote();
 renderLinkUpdates();
 
-status("تم جلب "+remoteItems.length+" عنصر بنجاح","#86efac");
+status("تم جلب "+remoteItems.length+" عنصر بنجاح.","#86efac");
 
-}catch(e){
-status("خطأ: "+e.message,"#fca5a5");
+}catch(error){
+status("خطأ: "+error.message,"#fca5a5");
 }finally{
 busy=false;
+renderLinkUpdates();
 }
 }
 
@@ -462,40 +634,48 @@ function renderJSONRemote(){
 el("json").value=JSON.stringify({videos:remoteItems},null,2);
 }
 
+/* عرض المحتوى المنشور */
 function renderRemote(){
 let box=el("remoteList");
 box.innerHTML="";
 
-let q=el("search").value.trim().toLowerCase();
+let query=el("search").value.trim().toLowerCase();
 
-let list=remoteItems.map((v,i)=>({v,i})).filter(x=>{
-let cat=String(x.v.category||"");
-let title=String(x.v.title||"").toLowerCase();
+let list=remoteItems.map((item,index)=>({item,index})).filter(x=>{
+let category=String(x.item.category||"");
+let title=String(x.item.title||"").toLowerCase();
 
-let matchesFilter=filter==="all"||cat.includes(filter);
+let matchesFilter=filter==="all"||category.includes(filter);
 
 return matchesFilter&&(
-title.includes(q)||
-cat.toLowerCase().includes(q)
+title.includes(query)||
+category.toLowerCase().includes(query)
 );
 });
 
 if(!list.length){
-box.innerHTML='<div class="meta">ماكو محتوى مطابق.</div>';
+box.innerHTML='<div class="meta">ماكو محتوى مطابق. اضغط جلب المحتوى من GitHub.</div>';
 return;
 }
 
-list.forEach(({v,i})=>{
+list.forEach(({item,index})=>{
 let card=document.createElement("div");
 card.className="card";
 
 let title=document.createElement("strong");
-title.textContent=v.title||"بدون اسم";
+title.textContent=item.title||"بدون اسم";
 
 let meta=document.createElement("div");
 meta.className="meta";
-meta.textContent=(v.category||"غير مصنف")+
-" | ID: "+(v.id||"بدون ID");
+meta.textContent=(item.category||"غير مصنف")+
+" | ID: "+(item.id||"بدون ID");
+
+let details=document.createElement("div");
+details.className="meta";
+
+if(item.episodeCount){
+details.textContent="عدد الحلقات: "+item.episodeCount;
+}
 
 let actions=document.createElement("div");
 actions.className="actions";
@@ -503,27 +683,27 @@ actions.className="actions";
 let edit=document.createElement("button");
 edit.className="blue";
 edit.textContent="🔗 تعديل الرابط";
-edit.onclick=()=>editRemote(i);
+edit.onclick=()=>editRemote(index);
 
 actions.append(edit);
-card.append(title,meta,actions);
+card.append(title,meta,details,actions);
 
 box.appendChild(card);
 });
 }
 
-function setFilter(f,b){
-filter=f;
+function setFilter(value,button){
+filter=value;
 
 document.querySelectorAll(".filters .tag")
 .forEach(x=>x.classList.remove("active"));
 
-if(b)b.classList.add("active");
+if(button)button.classList.add("active");
 
 renderRemote();
 }
 
-/* تعديل الرابط: إضافة إلى قائمة مؤقتة فقط */
+/* تجهيز تعديل رابط المحتوى المنشور */
 function editRemote(index){
 if(busy)return;
 
@@ -552,9 +732,9 @@ return;
 }
 
 let existing=pendingLinkUpdates.find(x=>
-x.id===item.id&&
-x.title===item.title&&
-x.category===item.category
+String(x.id)===String(item.id)&&
+String(x.title)===String(item.title)&&
+String(x.category)===String(item.category)
 );
 
 if(existing){
@@ -569,12 +749,13 @@ newVideoUrl:newUrl
 });
 }
 
+saveState();
 renderLinkUpdates();
 
-status("تم تجهيز الرابط الجديد. لم يتم نشره بعد.","#c4b5fd");
+status("تم حفظ الرابط الجديد مؤقتاً. لم يتم نشره بعد.","#c4b5fd");
 }
 
-/* عرض تحديثات الروابط المنتظرة */
+/* قائمة تحديثات الروابط */
 function renderLinkUpdates(){
 let box=el("linkUpdateList");
 box.innerHTML="";
@@ -589,54 +770,70 @@ box.innerHTML='<div class="meta">ماكو تحديثات روابط منتظرة
 return;
 }
 
-pendingLinkUpdates.forEach((v,i)=>{
+pendingLinkUpdates.forEach((item,index)=>{
 let card=document.createElement("div");
 card.className="card";
 
 let title=document.createElement("strong");
-title.textContent=v.title||"بدون اسم";
+title.textContent=item.title||"بدون اسم";
 
 let category=document.createElement("div");
 category.className="meta";
-category.textContent=v.category||"غير مصنف";
+category.textContent=item.category||"غير مصنف";
 
 let oldLabel=document.createElement("div");
 oldLabel.className="meta";
-oldLabel.textContent="الرابط القديم: "+(v.oldVideoUrl||"فارغ");
+oldLabel.textContent="الرابط القديم: "+(item.oldVideoUrl||"فارغ");
 
 let newLabel=document.createElement("div");
 newLabel.className="meta";
 newLabel.style.color="#86efac";
-newLabel.textContent="الرابط الجديد: "+v.newVideoUrl;
+newLabel.textContent="الرابط الجديد: "+item.newVideoUrl;
+
+let actions=document.createElement("div");
+actions.className="actions";
+
+let edit=document.createElement("button");
+edit.className="blue";
+edit.textContent="تغيير الرابط الجديد";
+edit.onclick=()=>{
+let value=prompt("أدخل الرابط الجديد:",item.newVideoUrl);
+if(value===null)return;
+
+value=value.trim();
+if(!value){
+alert("الرابط مطلوب.");
+return;
+}
+
+item.newVideoUrl=value;
+saveState();
+renderLinkUpdates();
+status("تم تعديل الرابط المؤقت.");
+};
 
 let del=document.createElement("button");
-del.className="btn red";
+del.className="red";
 del.textContent="إلغاء هذا التحديث";
-
 del.onclick=()=>{
-pendingLinkUpdates.splice(i,1);
+pendingLinkUpdates.splice(index,1);
+saveState();
 renderLinkUpdates();
 status("تم إلغاء التحديث المؤقت.");
 };
 
-card.append(title,category,oldLabel,newLabel,del);
+actions.append(edit,del);
+card.append(title,category,oldLabel,newLabel,actions);
 box.appendChild(card);
 });
 }
 
-/* نشر تحديثات الروابط فقط */
+/* نشر تحديثات الروابط */
 async function publishLinkUpdates(){
 if(busy)return;
 
 if(!pendingLinkUpdates.length){
 status("ماكو تحديثات روابط للنشر.","#fca5a5");
-return;
-}
-
-let c=config();
-
-if(!c.owner||!c.repo||!c.token){
-status("أدخل إعدادات GitHub أولاً.","#fca5a5");
 return;
 }
 
@@ -653,20 +850,21 @@ renderLinkUpdates();
 status("جاري نشر تحديثات الروابط...","#c4b5fd");
 
 try{
-let d=await readRemote();
+let data=await readRemote();
+let changes=[...pendingLinkUpdates];
 let updated=0;
 
-for(let change of pendingLinkUpdates){
+for(let change of changes){
 
-let target=d.videos.findIndex(x=>
+let target=data.videos.findIndex(item=>
 change.id!==undefined&&
-String(x.id)===String(change.id)
+String(item.id)===String(change.id)
 );
 
 if(target===-1){
-target=d.videos.findIndex(x=>
-String(x.title||"")===String(change.title||"")&&
-String(x.category||"")===String(change.category||"")
+target=data.videos.findIndex(item=>
+String(item.title||"")===String(change.title||"")&&
+String(item.category||"")===String(change.category||"")
 );
 }
 
@@ -674,9 +872,8 @@ if(target===-1){
 throw Error("لم يتم العثور على المحتوى: "+change.title);
 }
 
-let currentUrl=String(d.videos[target].videoUrl||"");
+let currentUrl=String(data.videos[target].videoUrl||"");
 
-/* منع الكتابة فوق تغيير أحدث */
 if(currentUrl!==change.oldVideoUrl){
 throw Error(
 "الرابط تغير مسبقاً للمحتوى: "+change.title+
@@ -684,8 +881,8 @@ throw Error(
 );
 }
 
-d.videos[target]={
-...d.videos[target],
+data.videos[target]={
+...data.videos[target],
 videoUrl:change.newVideoUrl
 };
 
@@ -693,22 +890,23 @@ updated++;
 }
 
 await writeRemote(
-d.videos,
+data.videos,
 "Update video links in alawiTV",
-d.sha
+data.sha
 );
 
-remoteItems=d.videos;
+remoteItems=data.videos;
 pendingLinkUpdates=[];
 
+saveState();
 renderRemote();
 renderJSONRemote();
 renderLinkUpdates();
 
-status("تم نشر "+updated+" رابط بنجاح على GitHub","#86efac");
+status("تم نشر "+updated+" رابط بنجاح على GitHub.","#86efac");
 
-}catch(e){
-status("فشل نشر الروابط: "+e.message,"#fca5a5");
+}catch(error){
+status("فشل نشر الروابط: "+error.message,"#fca5a5");
 }finally{
 busy=false;
 renderLinkUpdates();
@@ -723,24 +921,24 @@ status("قائمة تحديثات الروابط فارغة.");
 return;
 }
 
-if(!confirm("هل تريد إلغاء كل تحديثات الروابط المؤقتة؟")){
-return;
-}
+if(!confirm("هل تريد إلغاء كل تحديثات الروابط المؤقتة؟"))return;
 
 pendingLinkUpdates=[];
+
+saveState();
 renderLinkUpdates();
 
 status("تم إلغاء جميع تحديثات الروابط المؤقتة.");
 }
 
-/* نشر محتوى جديد */
+/* نشر المحتوى الجديد */
 async function publish(){
 if(busy)return;
 
 let c=config();
 
 if(!c.owner||!c.repo||!c.token){
-status("أدخل إعدادات GitHub واحفظها أولاً","#fca5a5");
+status("أدخل إعدادات GitHub والتوكن أولاً.","#fca5a5");
 return;
 }
 
@@ -750,84 +948,95 @@ let formTitle=el("title").value.trim();
 let formUrl=el("url").value.trim();
 
 if(formTitle||formUrl){
-let x=makeEntry();
+let item=makeEntry();
 
-if(!x){
-status("أدخل الاسم ورابط الفيديو","#fca5a5");
+if(!item){
+status("أدخل الاسم ورابط الفيديو بشكل صحيح.","#fca5a5");
 return;
 }
 
-pending.push(x);
+pending.push(item);
 }
 
 if(!pending.length){
-status("أضف محتوى قبل النشر","#fca5a5");
+status("أضف محتوى قبل النشر.","#fca5a5");
 return;
 }
+
+if(!confirm("هل تريد نشر "+pending.length+" عنصر على GitHub؟"))return;
 
 busy=true;
 status("جاري نشر المحتوى الجديد...","#93c5fd");
 
 try{
-let d=await readRemote();
-let combined=[...d.videos];
+let data=await readRemote();
+let combined=[...data.videos];
 
-for(let x of pending){
-if(duplicate(combined,x)){
-throw Error("محتوى مكرر: "+x.title+" ("+x.category+")");
+for(let item of pending){
+if(duplicate(combined,item)){
+throw Error("محتوى مكرر: "+item.title+" ("+item.category+")");
 }
 
-combined.push(x);
+combined.push(item);
 }
 
 await writeRemote(
 combined,
 "Publish new content to alawiTV",
-d.sha
+data.sha
 );
 
 remoteItems=combined;
 localItems=[];
 
+saveState();
 renderLocal();
 renderRemote();
 renderJSONRemote();
 clearForm();
 
-status("تم نشر المحتوى الجديد بنجاح. العدد: "+combined.length,"#86efac");
+status("تم نشر المحتوى بنجاح. العدد الكلي: "+combined.length,"#86efac");
 
-}catch(e){
-status("فشل النشر: "+e.message,"#fca5a5");
+}catch(error){
+status("فشل النشر: "+error.message,"#fca5a5");
 }finally{
 busy=false;
+renderLinkUpdates();
 }
 }
 
 /* نسخ JSON */
 async function copyJSON(){
-let text=el("json").value;
+let value=el("json").value;
 
-if(!text){
-status("ماكو JSON لنسخه","#fca5a5");
+if(!value){
+status("ماكو JSON لنسخه.","#fca5a5");
 return;
 }
 
 try{
-await navigator.clipboard.writeText(text);
-status("تم نسخ JSON","#86efac");
-}catch(e){
+await navigator.clipboard.writeText(value);
+status("تم نسخ JSON.","#86efac");
+}catch(error){
 el("json").select();
 document.execCommand("copy");
-status("تم النسخ","#86efac");
+status("تم النسخ.");
 }
 }
 
-/* تشغيل أولي */
+/* التشغيل الأولي */
 loadConfig();
+restoreState();
+
 renderLocal();
+renderRemote();
 renderLinkUpdates();
 categoryChanged();
 
+if(remoteItems.length){
+status("تم استرجاع آخر محتوى محفوظ على هذا الجهاز. حدّثه من GitHub عند الحاجة.","#93c5fd");
+}
 </script>
+
 </body>
 </html>
