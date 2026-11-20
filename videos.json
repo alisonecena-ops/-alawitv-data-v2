@@ -1,3 +1,12 @@
 {
-  "videos": []
+  "videos": [
+    {
+      "id": "1",
+      "title": "فيديو تجريبي علاوي TV",
+      "description": "بث تجريبي مؤقت لمدة ساعتين",
+      "videoUrl": "https://cdn2.okprimeone.site/hls2/01/00029/pkpvtfef672g_n/index-v1-a1.m3u8?t=SUVfXDTfa5MbGlgxXfrY5-3zZohd6PRamwiHkmSgqw8&s=1795173774&e=7200&v=625698&i=0.0&sp=350",
+      "thumbnailUrl": "",
+      "category": "عام"
+    }
+  ]
 }
