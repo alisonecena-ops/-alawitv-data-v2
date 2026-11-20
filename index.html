@@ -169,7 +169,7 @@
       font-size: 12px;
     }
     textarea {
-      min-height: 190px;
+      min-height: 220px;
       margin-top: 14px;
       direction: ltr;
       text-align: left;
@@ -226,16 +226,21 @@
 
     <div class="field">
       <label for="title">الاسم (فيلم، مسلسل، قناة، أو عرض مصارعة):</label>
-      <input id="title" type="text" placeholder="مثال: AEW Dynamite أو WWE RAW" />
+      <input id="title" type="text" placeholder="مثال: Spider-Man أو AEW Dynamite" />
+    </div>
+
+    <div class="field">
+      <label for="description">الوصف (اختياري):</label>
+      <input id="description" type="text" placeholder="مثال: فيلم سبايدرمان عبر علاوي TV" />
     </div>
 
     <div class="field">
       <label for="category">نوع المحتوى:</label>
       <select id="category" onchange="handleCategoryChange()">
-        <option value="movie">فيلم</option>
-        <option value="series">مسلسل</option>
-        <option value="channel">قناة</option>
-        <option value="wrestling">مصارعة</option>
+        <option value="أفلام">أفلام</option>
+        <option value="مسلسلات">مسلسلات</option>
+        <option value="قنوات">قنوات</option>
+        <option value="مصارعة">مصارعة</option>
       </select>
     </div>
 
@@ -249,13 +254,13 @@
     </div>
 
     <div class="field">
-      <label for="poster">رابط الصورة (اختياري):</label>
-      <input id="poster" type="url" placeholder="https://upload.wikimedia.org/wikipedia/en/6/6a/RAW_Netflix_debut_poster.jpg" />
+      <label for="thumbnailUrl">رابط الصورة (اختياري):</label>
+      <input id="thumbnailUrl" type="url" placeholder="https://..." />
     </div>
 
     <div class="field">
-      <label for="streamUrl">رابط الفيديو (.mp4 أو .m3u8):</label>
-      <input id="streamUrl" type="url" placeholder="https://..." />
+      <label for="videoUrl">رابط الفيديو (.mp4 أو .m3u8):</label>
+      <input id="videoUrl" type="url" placeholder="https://..." />
     </div>
 
     <button type="button" class="btn-add" onclick="addToLocalList()">+ إضافة للقائمة المؤقتة</button>
@@ -317,7 +322,7 @@
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
       const section = document.getElementById("wrestlingSection");
-      if (cat === "wrestling") {
+      if (cat === "مصارعة") {
         section.classList.remove("hidden");
       } else {
         section.classList.add("hidden");
@@ -334,31 +339,37 @@
 
     function buildEntryFromForm() {
       const title = document.getElementById("title").value.trim();
+      const description = document.getElementById("description").value.trim();
       const category = document.getElementById("category").value;
       const promotion = document.getElementById("promotion").value.trim();
-      const poster = document.getElementById("poster").value.trim();
-      const streamUrl = document.getElementById("streamUrl").value.trim();
+      const thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
+      const videoUrl = document.getElementById("videoUrl").value.trim();
 
-      if (!title || !streamUrl) {
+      if (!title || !videoUrl) {
         return { error: "يرجى إدخال الاسم ورابط الفيديو على الأقل." };
       }
 
+      const finalCategory = category === "مصارعة" && promotion
+        ? `مصارعة - ${promotion}`
+        : category;
+
       return {
         entry: {
-          id: Date.now(),
+          id: String(Date.now()),
           title,
-          category,
-          ...(category === "wrestling" ? { promotion: promotion || "General" } : {}),
-          poster,
-          url: streamUrl
+          description: description || `${title} عبر علاوي TV`,
+          videoUrl,
+          thumbnailUrl,
+          category: finalCategory
         }
       };
     }
 
     function clearFormInputs() {
       document.getElementById("title").value = "";
-      document.getElementById("poster").value = "";
-      document.getElementById("streamUrl").value = "";
+      document.getElementById("description").value = "";
+      document.getElementById("thumbnailUrl").value = "";
+      document.getElementById("videoUrl").value = "";
       document.getElementById("promotion").value = "";
       document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
     }
@@ -385,20 +396,19 @@
       listEl.innerHTML = "";
 
       items.forEach((item, idx) => {
-        const promoText = item.category === "wrestling" ? ` | القسم: ${item.promotion}` : "";
         const card = document.createElement("div");
         card.className = "item-card";
         card.innerHTML = `
           <div>
             <strong>${item.title}</strong>
-            <div class="item-meta">النوع: ${item.category}${promoText}</div>
+            <div class="item-meta">القسم: ${item.category} | ID: ${item.id}</div>
           </div>
           <button type="button" class="btn-del" onclick="removeItem(${idx})">حذف</button>
         `;
         listEl.appendChild(card);
       });
 
-      document.getElementById("jsonOutput").value = JSON.stringify(items, null, 2);
+      document.getElementById("jsonOutput").value = JSON.stringify({ videos: items }, null, 2);
     }
 
     function utf8ToBase64(str) {
@@ -420,6 +430,16 @@
       return new TextDecoder().decode(bytes);
     }
 
+    function extractExistingVideos(parsedJson) {
+      if (parsedJson && Array.isArray(parsedJson.videos)) {
+        return parsedJson.videos;
+      }
+      if (Array.isArray(parsedJson)) {
+        return parsedJson;
+      }
+      return [];
+    }
+
     async function publishDirectly() {
       const cfg = getConfig();
       if (!cfg.owner || !cfg.repo || !cfg.token) {
@@ -428,7 +448,7 @@
       }
 
       const formTitle = document.getElementById("title").value.trim();
-      const formUrl = document.getElementById("streamUrl").value.trim();
+      const formUrl = document.getElementById("videoUrl").value.trim();
       let newEntries = [...items];
 
       if (formTitle || formUrl) {
@@ -457,7 +477,7 @@
           "Content-Type": "application/json"
         };
 
-        let existingData = [];
+        let existingVideos = [];
         let existingSha = null;
 
         const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
@@ -467,20 +487,20 @@
           const decoded = base64ToUtf8(fileJson.content || "");
           if (decoded.trim()) {
             const parsed = JSON.parse(decoded);
-            if (Array.isArray(parsed)) {
-              existingData = parsed;
-            }
+            existingVideos = extractExistingVideos(parsed);
           }
         } else if (getRes.status !== 404) {
           const errText = await getRes.text();
           throw new Error(`تعذر قراءة الملف (${getRes.status}): ${errText}`);
         }
 
-        const mergedData = [...existingData, ...newEntries];
-        const formattedJson = JSON.stringify(mergedData, null, 2) + "\n";
+        const finalJsonObj = {
+          videos: [...existingVideos, ...newEntries]
+        };
+        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
 
         const putBody = {
-          message: `Add ${newEntries.map(x => x.title).join(", ")} via alawiTV dashboard`,
+          message: `Add ${newEntries.map(x => x.title).join(", ")} to videos.json`,
           content: utf8ToBase64(formattedJson),
           branch: cfg.branch,
           ...(existingSha ? { sha: existingSha } : {})
@@ -500,8 +520,8 @@
         items.length = 0;
         renderAll();
         clearFormInputs();
-        document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
-        setStatus(`تم النشر بنجاح إلى ${cfg.file} على الفرع ${cfg.branch}!`, "#86efac");
+        document.getElementById("jsonOutput").value = JSON.stringify(finalJsonObj, null, 2);
+        setStatus(`تم النشر بنجاح إلى ${cfg.file} بنفس هيكل {"videos": [...]}!`, "#86efac");
       } catch (err) {
         setStatus(`خطأ أثناء النشر: ${err.message}`, "#fca5a5");
       } finally {
