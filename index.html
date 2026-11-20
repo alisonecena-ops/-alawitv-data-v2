@@ -199,17 +199,17 @@
       <div class="grid-2">
         <div class="field">
           <label for="ghOwner">اسم المستخدم (Owner):</label>
-          <input id="ghOwner" type="text" placeholder="مثال: alisonecena-ops" />
+          <input id="ghOwner" type="text" value="alisonecena-ops" placeholder="مثال: alisonecena-ops" />
         </div>
         <div class="field">
           <label for="ghRepo">اسم المستودع (Repo):</label>
-          <input id="ghRepo" type="text" placeholder="مثال: -alawitv-data-v2" />
+          <input id="ghRepo" type="text" value="-alawitv-data-v2" placeholder="مثال: -alawitv-data-v2" />
         </div>
       </div>
       <div class="grid-2">
         <div class="field">
           <label for="ghFile">مسار ملف البيانات (File Path):</label>
-          <input id="ghFile" type="text" value="data.json" placeholder="data.json" />
+          <input id="ghFile" type="text" value="videos.json" placeholder="videos.json" />
         </div>
         <div class="field">
           <label for="ghBranch">الفرع (Branch):</label>
@@ -290,7 +290,7 @@
       const cfg = {
         owner: document.getElementById("ghOwner").value.trim(),
         repo: document.getElementById("ghRepo").value.trim(),
-        file: document.getElementById("ghFile").value.trim() || "data.json",
+        file: document.getElementById("ghFile").value.trim() || "videos.json",
         branch: document.getElementById("ghBranch").value.trim() || "main",
         token: document.getElementById("ghToken").value.trim()
       };
@@ -302,7 +302,7 @@
       return {
         owner: document.getElementById("ghOwner").value.trim(),
         repo: document.getElementById("ghRepo").value.trim(),
-        file: (document.getElementById("ghFile").value.trim() || "data.json").replace(/^\/+/, ""),
+        file: (document.getElementById("ghFile").value.trim() || "videos.json").replace(/^\/+/, ""),
         branch: document.getElementById("ghBranch").value.trim() || "main",
         token: document.getElementById("ghToken").value.trim()
       };
@@ -427,7 +427,6 @@
         return;
       }
 
-      // إذا المستخدم كتب عنصر بالحقول ولم يضغط إضافة مؤقتة، نأخذه تلقائياً
       const formTitle = document.getElementById("title").value.trim();
       const formUrl = document.getElementById("streamUrl").value.trim();
       let newEntries = [...items];
