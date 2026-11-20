@@ -1,846 +1,579 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة النشر المباشر - alawiTV</title>
-  <style>
-    * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
-    body {
-      margin: 0;
-      padding: 16px;
-      background: #0f1115;
-      color: #f3f4f6;
-    }
-    .container {
-      max-width: 680px;
-      margin: 0 auto;
-      background: #181b22;
-      border: 1px solid #2a2f3a;
-      border-radius: 12px;
-      padding: 18px;
-    }
-    h2 {
-      margin: 0 0 16px;
-      font-size: 20px;
-      color: #ffffff;
-    }
-    h3 {
-      margin: 0 0 12px;
-      font-size: 15px;
-      color: #e5e7eb;
-    }
-    .settings-box {
-      background: #12151b;
-      border: 1px solid #292f3b;
-      border-radius: 10px;
-      padding: 14px;
-      margin-bottom: 18px;
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width: 560px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
-    .field {
-      margin-bottom: 12px;
-    }
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-size: 13px;
-      color: #d1d5db;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: 1px solid #323846;
-      background: #111318;
-      color: #ffffff;
-      font-size: 14px;
-    }
-    input:focus, select:focus, textarea:focus {
-      outline: none;
-      border-color: #ef4444;
-    }
-    .quick-tags {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-      flex-wrap: wrap;
-    }
-    .tag-btn {
-      padding: 6px 12px;
-      border-radius: 999px;
-      border: 1px solid #3b4252;
-      background: #222733;
-      color: #e5e7eb;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .tag-btn.active {
-      background: #ef4444;
-      border-color: #ef4444;
-      color: #fff;
-    }
-    .btn-save-cfg {
-      padding: 9px 14px;
-      border: none;
-      border-radius: 8px;
-      background: #2563eb;
-      color: #fff;
-      font-size: 13px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-add {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #374151;
-      color: #fff;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 4px;
-    }
-    .btn-publish {
-      width: 100%;
-      padding: 13px;
-      border: none;
-      border-radius: 8px;
-      background: #dc2626;
-      color: #fff;
-      font-size: 15px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn-publish:disabled, .btn-save-link:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-    .btn-edit-links {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #3b4252;
-      border-radius: 8px;
-      background: #1f2430;
-      color: #f3f4f6;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .btn-copy {
-      width: 100%;
-      padding: 11px;
-      border: none;
-      border-radius: 8px;
-      background: #16a34a;
-      color: #fff;
-      font-size: 14px;
-      font-weight: bold;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    .items-list {
-      margin-top: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .item-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      background: #12151b;
-      border: 1px solid #292f3b;
-      padding: 10px 12px;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-    .item-meta {
-      color: #9ca3af;
-      font-size: 12px;
-      margin-top: 3px;
-      word-break: break-all;
-    }
-    .btn-del {
-      background: #374151;
-      color: #fca5a5;
-      border: none;
-      border-radius: 6px;
-      padding: 6px 10px;
-      cursor: pointer;
-      font-size: 12px;
-    }
-    .links-manager {
-      margin-top: 14px;
-      background: #12151b;
-      border: 1px solid #292f3b;
-      border-radius: 10px;
-      padding: 14px;
-    }
-    .filter-row {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .filter-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
-      border: 1px solid #323846;
-      background: #1b202b;
-      color: #e5e7eb;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .filter-btn.active {
-      background: #2563eb;
-      border-color: #2563eb;
-      color: #fff;
-    }
-    .link-edit-card {
-      background: #181b22;
-      border: 1px solid #2a2f3a;
-      border-radius: 8px;
-      padding: 10px 12px;
-      margin-bottom: 10px;
-    }
-    .link-edit-actions {
-      display: flex;
-      gap: 8px;
-      margin-top: 8px;
-      align-items: center;
-    }
-    .btn-save-link {
-      padding: 8px 14px;
-      border: none;
-      border-radius: 7px;
-      background: #16a34a;
-      color: #fff;
-      font-size: 12px;
-      font-weight: bold;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .btn-reload-links {
-      padding: 7px 12px;
-      border: 1px solid #3b4252;
-      border-radius: 7px;
-      background: #222733;
-      color: #e5e7eb;
-      font-size: 12px;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-    textarea {
-      min-height: 220px;
-      margin-top: 14px;
-      direction: ltr;
-      text-align: left;
-      font-family: monospace;
-      font-size: 12px;
-    }
-    .hidden { display: none; }
-    .status {
-      margin-top: 10px;
-      font-size: 13px;
-      min-height: 20px;
-      line-height: 1.5;
-    }
-    .hint {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>alawiTV - لوحة إدارة المحتوى</title>
+
+<style>
+*{box-sizing:border-box;font-family:Tahoma,Arial,sans-serif}
+body{margin:0;padding:14px;background:#0e1015;color:#f3f4f6}
+.container{max-width:720px;margin:auto;background:#181b22;border:1px solid #2a2f3a;border-radius:14px;padding:16px}
+h2{font-size:20px;margin:0 0 16px}
+h3{font-size:15px;margin:0 0 12px}
+.section{background:#12151b;border:1px solid #292f3b;border-radius:10px;padding:14px;margin-bottom:14px}
+.field{margin-bottom:12px}
+label{display:block;font-size:13px;margin-bottom:6px;color:#d1d5db}
+input,select,textarea{width:100%;padding:11px;border-radius:8px;border:1px solid #323846;background:#111318;color:white;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#ef4444}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{cursor:pointer}
+.btn{border:0;border-radius:8px;padding:11px;color:#fff;font-weight:bold;font-size:13px}
+.blue{background:#2563eb}
+.red{background:#dc2626}
+.green{background:#16a34a}
+.gray{background:#374151}
+.full{width:100%;margin-top:8px}
+.tagrow,.filters{display:flex;gap:7px;flex-wrap:wrap;margin:8px 0}
+.tag{background:#222733;border:1px solid #3b4252;color:white;border-radius:20px;padding:7px 12px}
+.tag.active{background:#dc2626}
+.card{background:#12151b;border:1px solid #292f3b;border-radius:9px;padding:11px;margin-top:9px}
+.cardtop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.meta{font-size:12px;color:#9ca3af;margin-top:5px;word-break:break-word}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.actions button{padding:8px 11px;border:0;border-radius:7px;color:white;font-size:12px}
+.status{min-height:22px;margin:10px 0;font-size:13px;line-height:1.6}
+textarea{min-height:200px;direction:ltr;text-align:left;font-family:monospace;margin-top:12px}
+.hidden{display:none!important}
+.hint{font-size:11px;color:#9ca3af;line-height:1.6;margin-top:5px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}.container{padding:12px}}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>لوحة النشر المباشر (alawiTV)</h2>
-
-    <div class="settings-box">
-      <h3>إعدادات الربط مع GitHub (تُحفظ محلياً في المتصفح)</h3>
-      <div class="grid-2">
-        <div class="field">
-          <label for="ghOwner">اسم المستخدم (Owner):</label>
-          <input id="ghOwner" type="text" value="alisonecena-ops" placeholder="مثال: alisonecena-ops" />
-        </div>
-        <div class="field">
-          <label for="ghRepo">اسم المستودع (Repo):</label>
-          <input id="ghRepo" type="text" value="-alawitv-data-v2" placeholder="مثال: -alawitv-data-v2" />
-        </div>
-      </div>
-      <div class="grid-2">
-        <div class="field">
-          <label for="ghFile">مسار ملف البيانات (File Path):</label>
-          <input id="ghFile" type="text" value="videos.json" placeholder="videos.json" />
-        </div>
-        <div class="field">
-          <label for="ghBranch">الفرع (Branch):</label>
-          <input id="ghBranch" type="text" value="main" placeholder="main" />
-        </div>
-      </div>
-      <div class="field">
-        <label for="ghToken">GitHub Token (بصلاحية Contents: Read & Write):</label>
-        <input id="ghToken" type="password" placeholder="github_pat_..." />
-        <div class="hint">لا تشارك التوكن مع أي شخص، ويُستخدم فقط لرفع التحديث مباشرة إلى ملف البيانات.</div>
-      </div>
-      <button type="button" class="btn-save-cfg" onclick="saveConfig()">حفظ إعدادات الربط</button>
-    </div>
-
-    <div class="field">
-      <label for="title">الاسم (فيلم، مسلسل، قناة، أو عرض مصارعة):</label>
-      <input id="title" type="text" placeholder="مثال: Spider-Man أو AEW Dynamite" />
-    </div>
-
-    <div class="field">
-      <label for="description">الوصف (اختياري):</label>
-      <input id="description" type="text" placeholder="مثال: فيلم سبايدرمان عبر علاوي TV" />
-    </div>
-
-    <div class="field">
-      <label for="category">نوع المحتوى:</label>
-      <select id="category" onchange="handleCategoryChange()">
-        <option value="أفلام">أفلام</option>
-        <option value="مسلسلات">مسلسلات</option>
-        <option value="قنوات">قنوات</option>
-        <option value="مصارعة">مصارعة</option>
-      </select>
-    </div>
-
-    <div class="field hidden" id="wrestlingSection">
-      <label for="promotion">قسم المصارعة (WWE / AEW):</label>
-      <input id="promotion" type="text" placeholder="مثال: WWE أو AEW" />
-      <div class="quick-tags">
-        <button type="button" class="tag-btn" onclick="setPromotion('WWE', this)">WWE</button>
-        <button type="button" class="tag-btn" onclick="setPromotion('AEW', this)">AEW</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="thumbnailUrl">رابط الصورة (اختياري):</label>
-      <input id="thumbnailUrl" type="url" placeholder="https://..." />
-    </div>
-
-    <div class="field">
-      <label for="videoUrl">رابط الفيديو (.mp4 أو .m3u8):</label>
-      <input id="videoUrl" type="url" placeholder="https://..." />
-    </div>
-
-    <button type="button" class="btn-add" onclick="addToLocalList()">+ إضافة للقائمة المؤقتة</button>
-    <button type="button" class="btn-publish" id="publishBtn" onclick="publishDirectly()">🚀 نشر مباشرة إلى GitHub</button>
-    <button type="button" class="btn-edit-links" onclick="toggleLinkManager()">🔧 تعديل روابط (أفلام ومسلسلات)</button>
-
-    <div class="links-manager hidden" id="linkManagerSection">
-      <h3>تعديل واستبدال روابط الأفلام والمسلسلات</h3>
-      <button type="button" class="btn-reload-links" onclick="loadRemoteLinksForEdit(true)">🔄 جلب أحدث الروابط من GitHub</button>
-
-      <div class="filter-row">
-        <button type="button" class="filter-btn active" id="filter-all" onclick="setLinkFilter('all', this)">الكل</button>
-        <button type="button" class="filter-btn" id="filter-movies" onclick="setLinkFilter('movies', this)">أفلام</button>
-        <button type="button" class="filter-btn" id="filter-series" onclick="setLinkFilter('series', this)">مسلسلات</button>
-      </div>
-
-      <div class="field">
-        <input id="linkSearchInput" type="text" placeholder="ابحث باسم الفيلم أو المسلسل..." oninput="renderEditableLinks()" />
-      </div>
-
-      <div id="editableLinksContainer">
-        <div class="item-meta">اضغط «تعديل روابط» أو «جلب أحدث الروابط من GitHub» لعرض العناصر.</div>
-      </div>
-    </div>
-
-    <div class="status" id="statusMsg"></div>
-
-    <div class="items-list" id="itemsList"></div>
-
-    <textarea id="jsonOutput" placeholder="هنا سيظهر كود JSON..."></textarea>
-    <button type="button" class="btn-copy" onclick="copyJson()">📋 نسخ كود JSON</button>
-  </div>
-
-  <script>
-    const CONFIG_KEY = "alawitv_gh_publish_config_v1";
-    const items = [];
-    let remoteVideosCache = [];
-    let currentLinkFilter = "all";
-
-    function loadConfig() {
-      try {
-        const raw = localStorage.getItem(CONFIG_KEY);
-        if (!raw) return;
-        const cfg = JSON.parse(raw);
-        if (cfg.owner) document.getElementById("ghOwner").value = cfg.owner;
-        if (cfg.repo) document.getElementById("ghRepo").value = cfg.repo;
-        if (cfg.file) document.getElementById("ghFile").value = cfg.file;
-        if (cfg.branch) document.getElementById("ghBranch").value = cfg.branch;
-        if (cfg.token) document.getElementById("ghToken").value = cfg.token;
-      } catch (_) {}
-    }
-
-    function saveConfig() {
-      const cfg = {
-        owner: document.getElementById("ghOwner").value.trim(),
-        repo: document.getElementById("ghRepo").value.trim(),
-        file: document.getElementById("ghFile").value.trim() || "videos.json",
-        branch: document.getElementById("ghBranch").value.trim() || "main",
-        token: document.getElementById("ghToken").value.trim()
-      };
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
-      setStatus("تم حفظ إعدادات الربط في المتصفح.", "#86efac");
-    }
-
-    function getConfig() {
-      return {
-        owner: document.getElementById("ghOwner").value.trim(),
-        repo: document.getElementById("ghRepo").value.trim(),
-        file: (document.getElementById("ghFile").value.trim() || "videos.json").replace(/^\/+/, ""),
-        branch: document.getElementById("ghBranch").value.trim() || "main",
-        token: document.getElementById("ghToken").value.trim()
-      };
-    }
-
-    function setStatus(msg, color = "#e5e7eb") {
-      const el = document.getElementById("statusMsg");
-      el.style.color = color;
-      el.textContent = msg;
-    }
-
-    function handleCategoryChange() {
-      const cat = document.getElementById("category").value;
-      const section = document.getElementById("wrestlingSection");
-      if (cat === "مصارعة") {
-        section.classList.remove("hidden");
-      } else {
-        section.classList.add("hidden");
-        document.getElementById("promotion").value = "";
-        document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
-      }
-    }
-
-    function setPromotion(name, btn) {
-      document.getElementById("promotion").value = name;
-      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-    }
-
-    function buildEntryFromForm() {
-      const title = document.getElementById("title").value.trim();
-      const description = document.getElementById("description").value.trim();
-      const category = document.getElementById("category").value;
-      const promotion = document.getElementById("promotion").value.trim();
-      const thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
-      const videoUrl = document.getElementById("videoUrl").value.trim();
-
-      if (!title || !videoUrl) {
-        return { error: "يرجى إدخال الاسم ورابط الفيديو على الأقل." };
-      }
-
-      const finalCategory = category === "مصارعة" && promotion
-        ? `مصارعة - ${promotion}`
-        : category;
-
-      return {
-        entry: {
-          id: String(Date.now()),
-          title,
-          description: description || `${title} عبر علاوي TV`,
-          videoUrl,
-          thumbnailUrl,
-          category: finalCategory
-        }
-      };
-    }
-
-    function clearFormInputs() {
-      document.getElementById("title").value = "";
-      document.getElementById("description").value = "";
-      document.getElementById("thumbnailUrl").value = "";
-      document.getElementById("videoUrl").value = "";
-      document.getElementById("promotion").value = "";
-      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
-    }
-
-    function addToLocalList() {
-      const res = buildEntryFromForm();
-      if (res.error) {
-        setStatus(res.error, "#fca5a5");
-        return;
-      }
-      items.push(res.entry);
-      renderAll();
-      clearFormInputs();
-      setStatus("تمت الإضافة إلى القائمة المؤقتة.", "#86efac");
-      if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
-        renderEditableLinks();
-      }
-    }
-
-    function removeItem(index) {
-      items.splice(index, 1);
-      renderAll();
-      if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
-        renderEditableLinks();
-      }
-    }
-
-    function renderAll() {
-      const listEl = document.getElementById("itemsList");
-      listEl.innerHTML = "";
-
-      items.forEach((item, idx) => {
-        const card = document.createElement("div");
-        card.className = "item-card";
-        card.innerHTML = `
-          <div>
-            <strong>${item.title}</strong>
-            <div class="item-meta">القسم: ${item.category} | ID: ${item.id}</div>
-          </div>
-          <button type="button" class="btn-del" onclick="removeItem(${idx})">حذف</button>
-        `;
-        listEl.appendChild(card);
-      });
-
-      document.getElementById("jsonOutput").value = JSON.stringify({ videos: items }, null, 2);
-    }
-
-    function utf8ToBase64(str) {
-      const bytes = new TextEncoder().encode(str);
-      let bin = "";
-      for (let i = 0; i < bytes.length; i++) {
-        bin += String.fromCharCode(bytes[i]);
-      }
-      return btoa(bin);
-    }
-
-    function base64ToUtf8(b64) {
-      const clean = b64.replace(/\n/g, "");
-      const bin = atob(clean);
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) {
-        bytes[i] = bin.charCodeAt(i);
-      }
-      return new TextDecoder().decode(bytes);
-    }
-
-    function extractExistingVideos(parsedJson) {
-      if (parsedJson && Array.isArray(parsedJson.videos)) {
-        return parsedJson.videos;
-      }
-      if (Array.isArray(parsedJson)) {
-        return parsedJson;
-      }
-      return [];
-    }
-
-    async function fetchRemoteVideosFile(cfg) {
-      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
-      const headers = {
-        "Authorization": `Bearer ${cfg.token}`,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json"
-      };
-
-      const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
-      if (getRes.status === 200) {
-        const fileJson = await getRes.json();
-        let existingVideos = [];
-        const decoded = base64ToUtf8(fileJson.content || "");
-        if (decoded.trim()) {
-          const parsed = JSON.parse(decoded);
-          existingVideos = extractExistingVideos(parsed);
-        }
-        return { apiUrl, headers, videos: existingVideos, sha: fileJson.sha };
-      } else if (getRes.status === 404) {
-        return { apiUrl, headers, videos: [], sha: null };
-      } else {
-        const errText = await getRes.text();
-        throw new Error(`تعذر قراءة الملف (${getRes.status}): ${errText}`);
-      }
-    }
-
-    function toggleLinkManager() {
-      const box = document.getElementById("linkManagerSection");
-      const willOpen = box.classList.contains("hidden");
-      box.classList.toggle("hidden");
-      if (willOpen) {
-        renderEditableLinks();
-        const cfg = getConfig();
-        if (cfg.owner && cfg.repo && cfg.token && remoteVideosCache.length === 0) {
-          loadRemoteLinksForEdit(false);
-        }
-      }
-    }
-
-    function setLinkFilter(filterName, btn) {
-      currentLinkFilter = filterName;
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      if (btn) btn.classList.add("active");
-      renderEditableLinks();
-    }
-
-    async function loadRemoteLinksForEdit(showMessage = true) {
-      const cfg = getConfig();
-      if (!cfg.owner || !cfg.repo || !cfg.token) {
-        if (showMessage) {
-          setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً لجلب الروابط من GitHub.", "#fca5a5");
-        }
-        renderEditableLinks();
-        return;
-      }
-
-      if (showMessage) {
-        setStatus("جاري جلب الروابط الحالية من GitHub...", "#93c5fd");
-      }
-
-      try {
-        const data = await fetchRemoteVideosFile(cfg);
-        remoteVideosCache = data.videos;
-        renderEditableLinks();
-        if (showMessage) {
-          setStatus(`تم جلب ${remoteVideosCache.length} عنصر من ${cfg.file}.`, "#86efac");
-        }
-      } catch (err) {
-        setStatus(`خطأ أثناء جلب الروابط: ${err.message}`, "#fca5a5");
-        renderEditableLinks();
-      }
-    }
-
-    function matchesCategoryFilter(category) {
-      const cat = String(category || "").trim();
-      if (currentLinkFilter === "movies") {
-        return cat === "أفلام" || cat.toLowerCase().includes("movie") || cat.toLowerCase().includes("film");
-      }
-      if (currentLinkFilter === "series") {
-        return cat === "مسلسلات" || cat.toLowerCase().includes("series") || cat.toLowerCase().includes("show");
-      }
-      return true;
-    }
-
-    function renderEditableLinks() {
-      const container = document.getElementById("editableLinksContainer");
-      const search = (document.getElementById("linkSearchInput")?.value || "").trim().toLowerCase();
-      container.innerHTML = "";
-
-      const combined = [
-        ...remoteVideosCache.map((v, idx) => ({ source: "remote", index: idx, item: v })),
-        ...items.map((v, idx) => ({ source: "local", index: idx, item: v }))
-      ].filter(entry => {
-        if (!matchesCategoryFilter(entry.item.category)) return false;
-        if (!search) return true;
-        const title = String(entry.item.title || "").toLowerCase();
-        const cat = String(entry.item.category || "").toLowerCase();
-        return title.includes(search) || cat.includes(search);
-      });
-
-      if (combined.length === 0) {
-        container.innerHTML = `<div class="item-meta">لا توجد أفلام أو مسلسلات مطابقة للفلتر أو البحث الحالي.</div>`;
-        return;
-      }
-
-      combined.forEach((entry, i) => {
-        const card = document.createElement("div");
-        card.className = "link-edit-card";
-        const srcLabel = entry.source === "remote" ? "منشور في GitHub" : "في القائمة المؤقتة";
-        const inputId = `edit-url-input-${i}`;
-
-        card.innerHTML = `
-          <div><strong>${entry.item.title || "بدون اسم"}</strong></div>
-          <div class="item-meta">القسم: ${entry.item.category || "غير محدد"} | ${srcLabel}</div>
-          <div class="link-edit-actions">
-            <input id="${inputId}" type="url" value="${escapeHtmlAttr(entry.item.videoUrl || "")}" placeholder="الصق الرابط الجديد هنا..." />
-            <button type="button" class="btn-save-link" id="save-btn-${i}">حفظ الرابط</button>
-          </div>
-        `;
-
-        container.appendChild(card);
-
-        document.getElementById(`save-btn-${i}`).addEventListener("click", () => {
-          const newUrl = document.getElementById(inputId).value.trim();
-          saveSingleLinkUpdate(entry.source, entry.index, newUrl, document.getElementById(`save-btn-${i}`));
-        });
-      });
-    }
-
-    function escapeHtmlAttr(val) {
-      return String(val)
-        .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-    }
-
-    async function saveSingleLinkUpdate(source, index, newUrl, btnEl) {
-      if (!newUrl) {
-        setStatus("أدخل رابط الفيديو الجديد قبل الحفظ.", "#fca5a5");
-        return;
-      }
-
-      if (source === "local") {
-        if (items[index]) {
-          items[index].videoUrl = newUrl;
-          renderAll();
-          renderEditableLinks();
-          setStatus(`تم تحديث رابط «${items[index].title}» في القائمة المؤقتة.`, "#86efac");
-        }
-        return;
-      }
-
-      const cfg = getConfig();
-      if (!cfg.owner || !cfg.repo || !cfg.token) {
-        setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً لحفظ الرابط على GitHub.", "#fca5a5");
-        return;
-      }
-
-      if (btnEl) btnEl.disabled = true;
-      setStatus("جاري حفظ الرابط الجديد على GitHub...", "#93c5fd");
-
-      try {
-        const freshData = await fetchRemoteVideosFile(cfg);
-        const list = [...freshData.videos];
-        const targetTitle = remoteVideosCache[index]?.title || list[index]?.title || "";
-
-        let targetIdx = index;
-        if (targetTitle && (!list[targetIdx] || list[targetIdx].title !== targetTitle)) {
-          const found = list.findIndex(x => x.title === targetTitle);
-          if (found !== -1) targetIdx = found;
-        }
-
-        if (!list[targetIdx]) {
-          throw new Error("لم يتم العثور على العنصر في ملف البيانات.");
-        }
-
-        list[targetIdx] = {
-          ...list[targetIdx],
-          videoUrl: newUrl
-        };
-
-        const finalJsonObj = { videos: list };
-        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
-
-        const putBody = {
-          message: `Update video link for ${list[targetIdx].title || "item"} in videos.json`,
-          content: utf8ToBase64(formattedJson),
-          branch: cfg.branch,
-          ...(freshData.sha ? { sha: freshData.sha } : {})
-        };
-
-        const putRes = await fetch(freshData.apiUrl, {
-          method: "PUT",
-          headers: freshData.headers,
-          body: JSON.stringify(putBody)
-        });
-
-        if (!putRes.ok) {
-          const errJson = await putRes.json().catch(() => ({}));
-          throw new Error(errJson.message || `فشل حفظ الرابط (${putRes.status})`);
-        }
-
-        remoteVideosCache = list;
-        document.getElementById("jsonOutput").value = JSON.stringify(finalJsonObj, null, 2);
-        renderEditableLinks();
-        setStatus(`تم استبدال وحفظ رابط «${list[targetIdx].title}» بنجاح في ${cfg.file}!`, "#86efac");
-      } catch (err) {
-        setStatus(`خطأ أثناء حفظ الرابط: ${err.message}`, "#fca5a5");
-      } finally {
-        if (btnEl) btnEl.disabled = false;
-      }
-    }
-
-    async function publishDirectly() {
-      const cfg = getConfig();
-      if (!cfg.owner || !cfg.repo || !cfg.token) {
-        setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً ثم اضغط حفظ إعدادات الربط.", "#fca5a5");
-        return;
-      }
-
-      const formTitle = document.getElementById("title").value.trim();
-      const formUrl = document.getElementById("videoUrl").value.trim();
-      let newEntries = [...items];
-
-      if (formTitle || formUrl) {
-        const res = buildEntryFromForm();
-        if (res.error) {
-          setStatus(res.error, "#fca5a5");
-          return;
-        }
-        newEntries.push(res.entry);
-      }
-
-      if (newEntries.length === 0) {
-        setStatus("أضف عنصراً واحداً على الأقل قبل النشر.", "#fca5a5");
-        return;
-      }
-
-      const publishBtn = document.getElementById("publishBtn");
-      publishBtn.disabled = true;
-      setStatus("جاري النشر إلى GitHub...", "#93c5fd");
-
-      try {
-        const data = await fetchRemoteVideosFile(cfg);
-        const existingVideos = data.videos;
-
-        const finalJsonObj = {
-          videos: [...existingVideos, ...newEntries]
-        };
-        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
-
-        const putBody = {
-          message: `Add ${newEntries.map(x => x.title).join(", ")} to videos.json`,
-          content: utf8ToBase64(formattedJson),
-          branch: cfg.branch,
-          ...(data.sha ? { sha: data.sha } : {})
-        };
-
-        const putRes = await fetch(data.apiUrl, {
-          method: "PUT",
-          headers: data.headers,
-          body: JSON.stringify(putBody)
-        });
-
-        if (!putRes.ok) {
-          const errJson = await putRes.json().catch(() => ({}));
-          throw new Error(errJson.message || `فشل النشر (${putRes.status})`);
-        }
-
-        remoteVideosCache = finalJsonObj.videos;
-        items.length = 0;
-        renderAll();
-        clearFormInputs();
-        document.getElementById("jsonOutput").value = JSON.stringify(finalJsonObj, null, 2);
-        if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
-          renderEditableLinks();
-        }
-        setStatus(`تم النشر بنجاح إلى ${cfg.file} بنفس هيكل {"videos": [...]}!`, "#86efac");
-      } catch (err) {
-        setStatus(`خطأ أثناء النشر: ${err.message}`, "#fca5a5");
-      } finally {
-        publishBtn.disabled = false;
-      }
-    }
-
-    function copyJson() {
-      const box = document.getElementById("jsonOutput");
-      if (!box.value.trim()) {
-        setStatus("لا يوجد كود JSON لنسخه.", "#fca5a5");
-        return;
-      }
-      box.select();
-      navigator.clipboard?.writeText(box.value);
-      setStatus("تم نسخ كود JSON إلى الحافظة.", "#86efac");
-    }
-
-    loadConfig();
-    renderAll();
-  </script>
+<div class="container">
+
+<h2>🎬 لوحة إدارة alawiTV</h2>
+
+<!-- إعدادات GitHub -->
+<div class="section">
+<h3>⚙️ إعدادات GitHub</h3>
+
+<div class="grid">
+<div class="field">
+<label>Owner</label>
+<input id="owner" value="alisonecena-ops">
+</div>
+<div class="field">
+<label>Repository</label>
+<input id="repo" value="-alawitv-data-v2">
+</div>
+<div class="field">
+<label>ملف البيانات</label>
+<input id="file" value="videos.json">
+</div>
+<div class="field">
+<label>Branch</label>
+<input id="branch" value="main">
+</div>
+</div>
+
+<div class="field">
+<label>GitHub Token</label>
+<input id="token" type="password" placeholder="GitHub Token">
+<div class="hint">لا تشارك التوكن. لا تستخدم هذه اللوحة على موقع عام إذا كان التوكن محفوظاً بها.</div>
+</div>
+
+<button class="btn blue" onclick="saveConfig()">حفظ الإعدادات</button>
+<button class="btn gray" onclick="loadRemote()">🔄 جلب المحتوى من GitHub</button>
+</div>
+
+<!-- إضافة المحتوى -->
+<div class="section">
+<h3>➕ إضافة محتوى</h3>
+
+<div class="field">
+<label>الاسم</label>
+<input id="title" placeholder="اسم الفيلم أو المسلسل أو القناة">
+</div>
+
+<div class="field">
+<label>الوصف</label>
+<input id="description" placeholder="وصف المحتوى">
+</div>
+
+<div class="grid">
+<div class="field">
+<label>القسم</label>
+<select id="category" onchange="categoryChanged()">
+<option>أفلام</option>
+<option>مسلسلات</option>
+<option>قنوات</option>
+<option>مصارعة</option>
+</select>
+</div>
+
+<div class="field hidden" id="promotionBox">
+<label>اتحاد المصارعة</label>
+<input id="promotion" placeholder="WWE أو AEW">
+<div class="tagrow">
+<button class="tag" onclick="setPromotion('WWE',this)">WWE</button>
+<button class="tag" onclick="setPromotion('AEW',this)">AEW</button>
+</div>
+</div>
+</div>
+
+<div class="field">
+<label>رابط الصورة</label>
+<input id="image" type="url" placeholder="https://...">
+</div>
+
+<div class="field">
+<label>رابط الفيديو</label>
+<input id="url" type="url" placeholder="https://...">
+</div>
+
+<button class="btn gray full" onclick="addLocal()">إضافة للقائمة المؤقتة</button>
+<button class="btn red full" onclick="publish()">🚀 نشر على GitHub</button>
+</div>
+
+<!-- المحتوى المؤقت -->
+<div class="section">
+<h3>📋 القائمة المؤقتة</h3>
+<div id="localList"></div>
+</div>
+
+<!-- إدارة المنشور -->
+<div class="section">
+<h3>🛠 إدارة المحتوى المنشور</h3>
+
+<button class="btn blue full" onclick="loadRemote()">جلب / تحديث المحتوى</button>
+
+<div class="filters">
+<button class="tag active" onclick="setFilter('all',this)">الكل</button>
+<button class="tag" onclick="setFilter('أفلام',this)">أفلام</button>
+<button class="tag" onclick="setFilter('مسلسلات',this)">مسلسلات</button>
+<button class="tag" onclick="setFilter('قنوات',this)">قنوات</button>
+<button class="tag" onclick="setFilter('مصارعة',this)">مصارعة</button>
+</div>
+
+<input id="search" placeholder="🔎 بحث عن المحتوى..." oninput="renderRemote()">
+
+<div id="remoteList"></div>
+</div>
+
+<div id="status" class="status"></div>
+
+<textarea id="json" placeholder="JSON"></textarea>
+<button class="btn green full" onclick="copyJSON()">📋 نسخ JSON</button>
+
+</div>
+
+<script>
+const KEY="alawitv_admin_config_v2";
+let localItems=[];
+let remoteItems=[];
+let filter="all";
+let busy=false;
+
+function el(id){return document.getElementById(id)}
+
+function status(msg,color="#e5e7eb"){
+el("status").textContent=msg;
+el("status").style.color=color;
+}
+
+function config(){
+return{
+owner:el("owner").value.trim(),
+repo:el("repo").value.trim(),
+file:el("file").value.trim()||"videos.json",
+branch:el("branch").value.trim()||"main",
+token:el("token").value.trim()
+}
+}
+
+function saveConfig(){
+localStorage.setItem(KEY,JSON.stringify(config()));
+status("تم حفظ الإعدادات محلياً","#86efac");
+}
+
+function loadConfig(){
+try{
+const c=JSON.parse(localStorage.getItem(KEY)||"{}");
+if(c.owner)el("owner").value=c.owner;
+if(c.repo)el("repo").value=c.repo;
+if(c.file)el("file").value=c.file;
+if(c.branch)el("branch").value=c.branch;
+if(c.token)el("token").value=c.token;
+}catch(e){}
+}
+
+function categoryChanged(){
+el("promotionBox").classList.toggle("hidden",el("category").value!=="مصارعة");
+}
+
+function setPromotion(v,b){
+el("promotion").value=v;
+document.querySelectorAll(".tag").forEach(x=>x.classList.remove("active"));
+if(b)b.classList.add("active");
+}
+
+function finalCategory(){
+let c=el("category").value;
+let p=el("promotion").value.trim();
+return c==="مصارعة"&&p?`مصارعة - ${p}`:c;
+}
+
+function makeEntry(){
+let title=el("title").value.trim();
+let videoUrl=el("url").value.trim();
+if(!title||!videoUrl)return null;
+
+return{
+id:String(Date.now())+"_"+Math.random().toString(36).slice(2,7),
+title,
+description:el("description").value.trim()||title,
+videoUrl,
+thumbnailUrl:el("image").value.trim(),
+category:finalCategory()
+};
+}
+
+function clearForm(){
+["title","description","image","url","promotion"].forEach(x=>el(x).value="");
+document.querySelectorAll(".tag").forEach(x=>x.classList.remove("active"));
+}
+
+function duplicate(list,item){
+return list.some(x=>
+String(x.title||"").trim().toLowerCase()===item.title.trim().toLowerCase()&&
+String(x.category||"").trim().toLowerCase()===item.category.trim().toLowerCase()
+);
+}
+
+function addLocal(){
+let item=makeEntry();
+if(!item){status("أدخل الاسم ورابط الفيديو أولاً","#fca5a5");return}
+if(duplicate(localItems,item)||duplicate(remoteItems,item)){
+status("هذا المحتوى موجود مسبقاً بنفس الاسم والقسم","#fca5a5");
+return;
+}
+localItems.push(item);
+renderLocal();
+renderJSON();
+clearForm();
+status("تمت الإضافة إلى القائمة المؤقتة","#86efac");
+}
+
+function renderLocal(){
+let box=el("localList");
+box.innerHTML="";
+if(!localItems.length){
+box.innerHTML='<div class="meta">القائمة المؤقتة فارغة.</div>';
+return;
+}
+localItems.forEach((v,i)=>{
+let c=document.createElement("div");
+c.className="card";
+let title=document.createElement("strong");
+title.textContent=v.title;
+let meta=document.createElement("div");
+meta.className="meta";
+meta.textContent=v.category;
+let del=document.createElement("button");
+del.className="btn red";
+del.textContent="حذف";
+del.onclick=()=>{localItems.splice(i,1);renderLocal();renderJSON()};
+c.append(title,meta,del);
+box.appendChild(c);
+});
+}
+
+function renderJSON(){
+el("json").value=JSON.stringify({videos:localItems},null,2);
+}
+
+function escapeHTML(s){
+return String(s??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c])));
+}
+
+function api(){
+let c=config();
+return{
+url:`https://api.github.com/repos/${encodeURIComponent(c.owner)}/${encodeURIComponent(c.repo)}/contents/${c.file.split("/").map(encodeURIComponent).join("/")}`,
+headers:{
+"Authorization":"Bearer "+c.token,
+"Accept":"application/vnd.github+json",
+"Content-Type":"application/json"
+},
+branch:c.branch
+};
+}
+
+function b64decode(s){
+let bin=atob(s.replace(/\n/g,""));
+let bytes=Uint8Array.from(bin,x=>x.charCodeAt(0));
+return new TextDecoder().decode(bytes);
+}
+
+function b64encode(s){
+let bytes=new TextEncoder().encode(s);
+let bin="";
+bytes.forEach(b=>bin+=String.fromCharCode(b));
+return btoa(bin);
+}
+
+function extract(obj){
+if(Array.isArray(obj))return obj;
+if(Array.isArray(obj?.videos))return obj.videos;
+return[];
+}
+
+async function readRemote(){
+let a=api();
+let res=await fetch(a.url+"?ref="+encodeURIComponent(a.branch),{headers:a.headers});
+if(res.status===404)return{...a,videos:[],sha:null};
+if(!res.ok)throw Error("فشل جلب الملف: "+res.status);
+let f=await res.json();
+let parsed=JSON.parse(b64decode(f.content||""));
+return{...a,videos:extract(parsed),sha:f.sha};
+}
+
+async function loadRemote(){
+if(busy)return;
+busy=true;
+status("جاري جلب البيانات من GitHub...","#93c5fd");
+try{
+let d=await readRemote();
+remoteItems=d.videos;
+renderRemote();
+renderJSONRemote();
+status("تم جلب "+remoteItems.length+" عنصر بنجاح","#86efac");
+}catch(e){status("خطأ: "+e.message,"#fca5a5")}
+finally{busy=false}
+}
+
+function renderJSONRemote(){
+el("json").value=JSON.stringify({videos:remoteItems},null,2);
+}
+
+function renderRemote(){
+let box=el("remoteList");
+box.innerHTML="";
+let q=el("search").value.trim().toLowerCase();
+
+let list=remoteItems.map((v,i)=>({v,i})).filter(x=>{
+let cat=String(x.v.category||"");
+let title=String(x.v.title||"").toLowerCase();
+let matchesFilter=filter==="all"||cat.includes(filter);
+return matchesFilter&&(title.includes(q)||cat.toLowerCase().includes(q));
+});
+
+if(!list.length){
+box.innerHTML='<div class="meta">ماكو محتوى مطابق.</div>';
+return;
+}
+
+list.forEach(({v,i})=>{
+let card=document.createElement("div");
+card.className="card";
+
+let title=document.createElement("strong");
+title.textContent=v.title||"بدون اسم";
+
+let meta=document.createElement("div");
+meta.className="meta";
+meta.textContent=(v.category||"غير مصنف")+" | ID: "+(v.id||"بدون ID");
+
+let actions=document.createElement("div");
+actions.className="actions";
+
+let edit=document.createElement("button");
+edit.className="blue";
+edit.textContent="✏️ تعديل كامل";
+edit.onclick=()=>editRemote(i);
+
+let del=document.createElement("button");
+del.className="red";
+del.textContent="🗑 حذف";
+del.onclick=()=>deleteRemote(i);
+
+actions.append(edit,del);
+card.append(title,meta,actions);
+box.appendChild(card);
+});
+}
+
+function setFilter(f,b){
+filter=f;
+document.querySelectorAll(".filters .tag").forEach(x=>x.classList.remove("active"));
+if(b)b.classList.add("active");
+renderRemote();
+}
+
+async function writeRemote(videos,message,sha){
+let a=api();
+let body={
+message,
+content:b64encode(JSON.stringify({videos},null,2)+"\n"),
+branch:a.branch
+};
+if(sha)body.sha=sha;
+
+let res=await fetch(a.url,{
+method:"PUT",
+headers:a.headers,
+body:JSON.stringify(body)
+});
+if(!res.ok){
+let err=await res.json().catch(()=>({}));
+throw Error(err.message||"فشل الحفظ "+res.status);
+}
+}
+
+async function publish(){
+if(busy)return;
+let c=config();
+if(!c.owner||!c.repo||!c.token){
+status("أدخل إعدادات GitHub واحفظها أولاً","#fca5a5");
+return;
+}
+
+let pending=[...localItems];
+let formTitle=el("title").value.trim();
+let formUrl=el("url").value.trim();
+
+if(formTitle||formUrl){
+let x=makeEntry();
+if(!x){status("أدخل الاسم ورابط الفيديو","#fca5a5");return}
+pending.push(x);
+}
+
+if(!pending.length){status("أضف محتوى قبل النشر","#fca5a5");return}
+
+busy=true;
+status("جاري النشر...","#93c5fd");
+
+try{
+let d=await readRemote();
+let combined=[...d.videos];
+
+for(let x of pending){
+if(duplicate(combined,x)){
+throw Error("محتوى مكرر: "+x.title+" ("+x.category+")");
+}
+combined.push(x);
+}
+
+await writeRemote(combined,"Publish content to alawiTV",d.sha);
+remoteItems=combined;
+localItems=[];
+renderLocal();
+renderRemote();
+renderJSONRemote();
+clearForm();
+status("تم النشر بنجاح. عدد المحتويات: "+combined.length,"#86efac");
+}catch(e){status("فشل النشر: "+e.message,"#fca5a5")}
+finally{busy=false}
+}
+
+async function editRemote(index){
+if(busy)return;
+let item=remoteItems[index];
+if(!item)return;
+
+let title=prompt("اسم المحتوى:",item.title||"");
+if(title===null)return;
+title=title.trim();
+if(!title){alert("الاسم مطلوب");return}
+
+let description=prompt("الوصف:",item.description||"");
+if(description===null)return;
+
+let category=prompt("القسم:",item.category||"أفلام");
+if(category===null)return;
+
+let thumbnailUrl=prompt("رابط الصورة:",item.thumbnailUrl||item.imageUrl||"");
+if(thumbnailUrl===null)return;
+
+let videoUrl=prompt("رابط الفيديو:",item.videoUrl||"");
+if(videoUrl===null)return;
+videoUrl=videoUrl.trim();
+if(!videoUrl){alert("رابط الفيديو مطلوب");return}
+
+if(remoteItems.some((x,i)=>i!==index&&
+String(x.title||"").toLowerCase()===title.toLowerCase()&&
+String(x.category||"").toLowerCase()===category.toLowerCase())){
+alert("يوجد محتوى آخر بنفس الاسم والقسم");
+return;
+}
+
+busy=true;
+status("جاري حفظ التعديلات...","#93c5fd");
+
+try{
+let d=await readRemote();
+let target=d.videos.findIndex(x=>String(x.id)===String(item.id));
+if(target===-1){
+target=d.videos.findIndex(x=>x.title===item.title&&x.category===item.category);
+}
+if(target===-1)throw Error("لم يتم العثور على المحتوى في GitHub");
+
+d.videos[target]={
+...d.videos[target],
+title,
+description,
+category,
+thumbnailUrl,
+videoUrl
+};
+
+await writeRemote(d.videos,"Edit content in alawiTV",d.sha);
+remoteItems=d.videos;
+renderRemote();
+renderJSONRemote();
+status("تم تعديل المحتوى وحفظه بنجاح","#86efac");
+}catch(e){status("خطأ أثناء التعديل: "+e.message,"#fca5a5")}
+finally{busy=false}
+}
+
+async function deleteRemote(index){
+if(busy)return;
+let item=remoteItems[index];
+if(!item)return;
+
+if(!confirm("هل أنت متأكد من حذف:\n"+item.title+"\n\nهذا الحذف سيؤثر على ملف GitHub."))return;
+
+busy=true;
+status("جاري حذف المحتوى...","#93c5fd");
+
+try{
+let d=await readRemote();
+let target=d.videos.findIndex(x=>String(x.id)===String(item.id));
+if(target===-1)target=d.videos.findIndex(x=>x.title===item.title&&x.category===item.category);
+if(target===-1)throw Error("لم يتم العثور على المحتوى");
+
+d.videos.splice(target,1);
+await writeRemote(d.videos,"Delete content from alawiTV",d.sha);
+
+remoteItems=d.videos;
+renderRemote();
+renderJSONRemote();
+status("تم حذف المحتوى بنجاح","#86efac");
+}catch(e){status("فشل الحذف: "+e.message,"#fca5a5")}
+finally{busy=false}
+}
+
+async function copyJSON(){
+let text=el("json").value;
+if(!text){status("ماكو JSON لنسخه","#fca5a5");return}
+try{
+await navigator.clipboard.writeText(text);
+status("تم نسخ JSON","#86efac");
+}catch(e){
+el("json").select();
+document.execCommand("copy");
+status("تم النسخ","#86efac");
+}
+}
+
+loadConfig();
+renderLocal();
+categoryChanged();
+</script>
 </body>
 </html>
