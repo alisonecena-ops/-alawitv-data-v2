@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة إدارة المحتوى - علاوي TV (alawiTV)</title>
+  <title>لوحة تحكم alawiTV - علاوي TV</title>
   <style>
     * {
       box-sizing: border-box;
@@ -12,42 +12,40 @@
     body {
       margin: 0;
       padding: 12px;
-      background: #0f1115;
+      background: #0d1015;
       color: #f3f4f6;
       line-height: 1.5;
     }
-    .container {
-      max-width: 720px;
+    .app-shell {
+      max-width: 740px;
       margin: 0 auto;
-      background: #181b22;
-      border: 1px solid #2a2f3a;
-      border-radius: 12px;
-      padding: 16px;
     }
-    h2 {
+    .top-banner {
+      background: linear-gradient(135deg, #1b1f2a, #14171f);
+      border: 1px solid #2b3140;
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .top-banner h1 {
       margin: 0 0 6px;
       font-size: 20px;
       color: #ffffff;
     }
-    .subtitle {
+    .top-banner p {
+      margin: 0;
       font-size: 12px;
       color: #9ca3af;
-      margin-bottom: 14px;
       word-break: break-all;
     }
-    h3 {
-      margin: 0 0 10px;
-      font-size: 15px;
-      color: #ffffff;
-    }
-    .box {
-      background: #12151b;
-      border: 1px solid #292f3b;
-      border-radius: 10px;
+    .card {
+      background: #161922;
+      border: 1px solid #272d3b;
+      border-radius: 12px;
       padding: 14px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
-    .section-header {
+    .card-title-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -55,12 +53,17 @@
       flex-wrap: wrap;
       margin-bottom: 10px;
     }
-    .counter-badge {
-      background: #252b38;
+    .card h2 {
+      margin: 0;
+      font-size: 15px;
+      color: #ffffff;
+    }
+    .badge {
+      background: #222836;
       color: #93c5fd;
-      border: 1px solid #374151;
+      border: 1px solid #343d52;
       border-radius: 999px;
-      padding: 3px 10px;
+      padding: 2px 10px;
       font-size: 12px;
       font-weight: bold;
     }
@@ -76,7 +79,7 @@
       body {
         padding: 8px;
       }
-      .container {
+      .card, .top-banner {
         padding: 12px;
       }
     }
@@ -93,8 +96,8 @@
       width: 100%;
       padding: 10px 12px;
       border-radius: 8px;
-      border: 1px solid #323846;
-      background: #111318;
+      border: 1px solid #313849;
+      background: #10131a;
       color: #ffffff;
       font-size: 14px;
     }
@@ -102,22 +105,27 @@
       outline: none;
       border-color: #ef4444;
     }
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
     .quick-tags {
       display: flex;
       gap: 8px;
       margin-top: 8px;
       flex-wrap: wrap;
     }
-    .tag-btn {
+    .chip-btn {
       padding: 6px 12px;
       border-radius: 999px;
-      border: 1px solid #3b4252;
-      background: #222733;
+      border: 1px solid #374054;
+      background: #202533;
       color: #e5e7eb;
       font-size: 12px;
       cursor: pointer;
     }
-    .tag-btn.active {
+    .chip-btn.active {
       background: #ef4444;
       border-color: #ef4444;
       color: #ffffff;
@@ -137,83 +145,85 @@
       opacity: 0.6;
       cursor: not-allowed;
     }
-    .btn-save-cfg {
-      background: #2563eb;
+    .btn-inline {
       width: auto;
-      padding: 9px 16px;
-      font-size: 13px;
+      margin-top: 0;
+      padding: 7px 12px;
+      font-size: 12px;
     }
-    .btn-add {
+    .btn-blue {
+      background: #2563eb;
+    }
+    .btn-gray {
       background: #374151;
     }
-    .btn-publish {
+    .btn-red {
       background: #dc2626;
       padding: 13px;
       font-size: 15px;
     }
-    .btn-publish-links {
+    .btn-sky {
       background: #0284c7;
       padding: 12px;
     }
-    .btn-refresh {
-      background: #1f2937;
-      border: 1px solid #3b4252;
-      width: auto;
-      padding: 7px 12px;
-      font-size: 12px;
-      margin-top: 0;
-    }
-    .btn-clear-all {
-      background: #451a1a;
-      color: #fca5a5;
-      border: 1px solid #7f1d1d;
-      width: auto;
-      padding: 7px 12px;
-      font-size: 12px;
-      margin-top: 0;
-    }
-    .btn-copy {
+    .btn-green {
       background: #16a34a;
     }
-    .items-list {
+    .btn-danger-soft {
+      background: #3f191d;
+      color: #fca5a5;
+      border: 1px solid #7f1d1d;
+    }
+    .status-box {
+      background: #12151d;
+      border: 1px solid #2b3140;
+      border-radius: 10px;
+      padding: 11px 13px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: #e5e7eb;
+      word-break: break-word;
+    }
+    .list {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 10px;
     }
-    .item-card {
-      background: #181b22;
-      border: 1px solid #2a2f3a;
-      border-radius: 8px;
+    .entry-card {
+      background: #11141c;
+      border: 1px solid #262c3a;
+      border-radius: 9px;
       padding: 10px 12px;
     }
-    .item-top {
+    .entry-head {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 8px;
     }
-    .item-title {
-      font-weight: bold;
+    .entry-title {
       font-size: 14px;
+      font-weight: bold;
       color: #ffffff;
     }
-    .item-meta {
+    .entry-meta {
       font-size: 12px;
       color: #9ca3af;
       margin-top: 3px;
       word-break: break-all;
     }
-    .pending-tag {
+    .pending-pill {
       display: inline-block;
-      background: #78350f;
-      color: #fde68a;
+      margin-top: 5px;
+      padding: 2px 8px;
       border-radius: 6px;
-      padding: 2px 7px;
       font-size: 11px;
-      margin-top: 4px;
+      background: #422006;
+      color: #fde68a;
+      border: 1px solid #854d0e;
     }
-    .btn-sm {
+    .btn-mini {
       padding: 6px 10px;
       border: none;
       border-radius: 6px;
@@ -222,130 +232,97 @@
       cursor: pointer;
       white-space: nowrap;
     }
-    .btn-del {
-      background: #374151;
-      color: #fca5a5;
+    .edit-panel {
+      margin-top: 9px;
+      padding-top: 9px;
+      border-top: 1px dashed #2e3647;
     }
-    .btn-edit-link {
-      background: #2563eb;
-      color: #ffffff;
-    }
-    .btn-save-pending {
-      background: #16a34a;
-      color: #ffffff;
-      margin-top: 8px;
-    }
-    .btn-cancel-edit {
-      background: #374151;
-      color: #e5e7eb;
-      margin-top: 8px;
-    }
-    .edit-box {
-      margin-top: 8px;
-      padding-top: 8px;
-      border-top: 1px dashed #323846;
-    }
-    .edit-actions {
+    .row-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      margin-top: 8px;
     }
-    .filter-row {
+    .filter-bar {
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
       margin-bottom: 10px;
     }
-    .filter-btn {
+    .filter-chip {
       padding: 6px 10px;
       border-radius: 8px;
-      border: 1px solid #323846;
-      background: #181b22;
+      border: 1px solid #303747;
+      background: #11141c;
       color: #e5e7eb;
       font-size: 12px;
       cursor: pointer;
     }
-    .filter-btn.active {
+    .filter-chip.active {
       background: #2563eb;
       border-color: #2563eb;
       color: #ffffff;
     }
     textarea {
-      min-height: 200px;
-      margin-top: 12px;
+      min-height: 210px;
       direction: ltr;
       text-align: left;
       font-family: monospace;
       font-size: 12px;
     }
-    .hidden {
-      display: none;
-    }
-    .status {
-      margin: 10px 0;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: #12151b;
-      border: 1px solid #292f3b;
-      font-size: 13px;
-      min-height: 22px;
-      word-break: break-word;
-    }
-    .hint {
-      font-size: 11px;
-      color: #9ca3af;
-      margin-top: 4px;
-    }
-    .empty-msg {
+    .empty {
       font-size: 12px;
       color: #9ca3af;
-      padding: 8px 0;
+      padding: 6px 0;
+    }
+    .hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>لوحة إدارة المحتوى - علاوي TV (alawiTV)</h2>
-    <div class="subtitle">
-      ملف البيانات: https://raw.githubusercontent.com/alisonecena-ops/-alawitv-data-v2/main/videos.json
+  <div class="app-shell">
+    <div class="top-banner">
+      <h1>لوحة تحكم alawiTV - علاوي TV</h1>
+      <p>ملف البيانات: https://raw.githubusercontent.com/alisonecena-ops/-alawitv-data-v2/main/videos.json</p>
     </div>
 
     <!-- 1. إعدادات GitHub -->
-    <div class="box">
-      <h3>إعدادات GitHub</h3>
+    <section class="card">
+      <h2>إعدادات GitHub</h2>
       <div class="grid-2">
         <div class="field">
           <label for="ghOwner">Owner:</label>
-          <input id="ghOwner" type="text" value="alisonecena-ops" placeholder="alisonecena-ops" />
+          <input id="ghOwner" type="text" value="alisonecena-ops" />
         </div>
         <div class="field">
           <label for="ghRepo">Repository:</label>
-          <input id="ghRepo" type="text" value="-alawitv-data-v2" placeholder="-alawitv-data-v2" />
+          <input id="ghRepo" type="text" value="-alawitv-data-v2" />
         </div>
       </div>
       <div class="grid-2">
         <div class="field">
           <label for="ghFile">File:</label>
-          <input id="ghFile" type="text" value="videos.json" placeholder="videos.json" />
+          <input id="ghFile" type="text" value="videos.json" />
         </div>
         <div class="field">
           <label for="ghBranch">Branch:</label>
-          <input id="ghBranch" type="text" value="main" placeholder="main" />
+          <input id="ghBranch" type="text" value="main" />
         </div>
       </div>
       <div class="field">
         <label for="ghToken">GitHub Token:</label>
         <input id="ghToken" type="password" placeholder="أدخل GitHub Token عند الحاجة..." oninput="syncTokenInput()" />
-        <div class="hint">تنبيه أمني: لا يتم حفظ GitHub Token داخل localStorage أو في المتصفح؛ أدخله عند الحاجة للنشر أو جلب البيانات.</div>
+        <div class="hint">تنبيه أمني: لا يتم حفظ GitHub Token داخل localStorage أو في المتصفح؛ أدخله عند الحاجة لجلب البيانات أو النشر.</div>
       </div>
-      <button type="button" class="btn btn-save-cfg" onclick="saveConfig()">حفظ إعدادات GitHub</button>
-    </div>
+      <button type="button" class="btn btn-blue btn-inline" onclick="saveConfig()">حفظ إعدادات GitHub</button>
+    </section>
 
-    <div class="status" id="statusMsg">جاهز للعمل.</div>
+    <div class="status-box" id="statusBox">اللوحة الجديدة جاهزة؛ أدخل البيانات أو التوكن للبدء.</div>
 
     <!-- 2. إضافة محتوى -->
-    <div class="box">
-      <h3>إضافة محتوى</h3>
+    <section class="card">
+      <h2>إضافة محتوى</h2>
 
       <div class="field">
         <label for="title">الاسم:</label>
@@ -354,7 +331,7 @@
 
       <div class="field">
         <label for="description">الوصف:</label>
-        <input id="description" type="text" placeholder="مثال: فيلم سبايدرمان عبر علاوي TV" />
+        <input id="description" type="text" placeholder="وصف مختصر للمحتوى..." />
       </div>
 
       <div class="field">
@@ -365,21 +342,20 @@
           <option value="قنوات">قنوات</option>
           <option value="مصارعة WWE">مصارعة WWE</option>
           <option value="مصارعة AEW">مصارعة AEW</option>
-          <option value="مصارعة">مصارعة</option>
         </select>
       </div>
 
-      <div class="field hidden" id="episodesSection">
+      <div class="field hidden" id="episodesBox">
         <label for="episodesCount">عدد الحلقات للمسلسلات إن وجد:</label>
         <input id="episodesCount" type="number" min="1" placeholder="مثال: 50" />
       </div>
 
-      <div class="field hidden" id="wrestlingSection">
+      <div class="field hidden" id="wrestlingBox">
         <label for="promotion">قسم المصارعة (WWE / AEW):</label>
-        <input id="promotion" type="text" placeholder="مثال: WWE أو AEW" />
+        <input id="promotion" type="text" placeholder="WWE أو AEW" />
         <div class="quick-tags">
-          <button type="button" class="tag-btn" onclick="setPromotion('WWE', this)">WWE</button>
-          <button type="button" class="tag-btn" onclick="setPromotion('AEW', this)">AEW</button>
+          <button type="button" class="chip-btn" id="chip-wwe" onclick="selectPromotion('WWE', this)">WWE</button>
+          <button type="button" class="chip-btn" id="chip-aew" onclick="selectPromotion('AEW', this)">AEW</button>
         </div>
       </div>
 
@@ -393,273 +369,223 @@
         <input id="videoUrl" type="url" placeholder="https://..." />
       </div>
 
-      <button type="button" class="btn btn-add" onclick="addToTempList()">+ إضافة إلى المحتوى المؤقت</button>
-      <button type="button" class="btn btn-publish" id="publishBtn" onclick="publish()">🚀 نشر المحتوى إلى GitHub</button>
-    </div>
+      <button type="button" class="btn btn-gray" onclick="addToTempList()">+ إضافة إلى المحتوى المؤقت</button>
+      <button type="button" class="btn btn-red" id="publishBtn" onclick="publish()">🚀 نشر المحتوى إلى GitHub</button>
+    </section>
 
-    <!-- 3. القسم الأول: المحتوى المؤقت -->
-    <div class="box">
-      <div class="section-header">
-        <h3>المحتوى المؤقت <span class="counter-badge" id="tempCountBadge">0</span></h3>
-        <button type="button" class="btn btn-clear-all" onclick="clearAllTempItems()">حذف القائمة المؤقتة كلها</button>
+    <!-- 3. المحتوى المؤقت -->
+    <section class="card">
+      <div class="card-title-row">
+        <h2>المحتوى المؤقت <span class="badge" id="tempBadge">0</span></h2>
+        <button type="button" class="btn btn-danger-soft btn-inline" onclick="clearAllTemp()">حذف القائمة المؤقتة كلها</button>
       </div>
-      <div class="hint">يُحفظ في localStorage ويبقى محفوظاً حتى لو أغلقت الصفحة.</div>
-      <div class="items-list" id="tempItemsList"></div>
-    </div>
+      <div class="hint">يُحفظ تلقائياً في localStorage ويبقى محفوظاً حتى لو أغلقت الصفحة.</div>
+      <div class="list" id="tempList"></div>
+    </section>
 
-    <!-- 4. القسم الثاني: المحتوى المنشور وتعديل روابط الفيديو -->
-    <div class="box">
-      <div class="section-header">
-        <h3>المحتوى المنشور وتعديل روابط الفيديو <span class="counter-badge" id="publishedCountBadge">0</span></h3>
-        <button type="button" class="btn btn-refresh" id="refreshBtn" onclick="loadPublishedContent(true)">🔄 تحديث من GitHub</button>
+    <!-- 4. المحتوى المنشور وتعديل روابط الفيديو -->
+    <section class="card">
+      <div class="card-title-row">
+        <h2>المحتوى المنشور وتعديل روابط الفيديو <span class="badge" id="publishedBadge">0</span></h2>
+        <button type="button" class="btn btn-gray btn-inline" id="refreshBtn" onclick="loadPublishedContent(true)">🔄 تحديث من GitHub</button>
       </div>
 
-      <div class="filter-row">
-        <button type="button" class="filter-btn active" id="flt-all" onclick="setPublishedFilter('all', this)">الكل</button>
-        <button type="button" class="filter-btn" id="flt-movies" onclick="setPublishedFilter('أفلام', this)">أفلام</button>
-        <button type="button" class="filter-btn" id="flt-series" onclick="setPublishedFilter('مسلسلات', this)">مسلسلات</button>
-        <button type="button" class="filter-btn" id="flt-channels" onclick="setPublishedFilter('قنوات', this)">قنوات</button>
-        <button type="button" class="filter-btn" id="flt-wwe" onclick="setPublishedFilter('مصارعة WWE', this)">مصارعة WWE</button>
-        <button type="button" class="filter-btn" id="flt-aew" onclick="setPublishedFilter('مصارعة AEW', this)">مصارعة AEW</button>
+      <div class="filter-bar">
+        <button type="button" class="filter-chip active" onclick="setFilter('all', this)">الكل</button>
+        <button type="button" class="filter-chip" onclick="setFilter('أفلام', this)">أفلام</button>
+        <button type="button" class="filter-chip" onclick="setFilter('مسلسلات', this)">مسلسلات</button>
+        <button type="button" class="filter-chip" onclick="setFilter('قنوات', this)">قنوات</button>
+        <button type="button" class="filter-chip" onclick="setFilter('مصارعة WWE', this)">مصارعة WWE</button>
+        <button type="button" class="filter-chip" onclick="setFilter('مصارعة AEW', this)">مصارعة AEW</button>
       </div>
 
       <div class="field">
-        <input id="publishedSearch" type="text" placeholder="ابحث بالاسم أو التصنيف..." oninput="renderPublishedItems()" />
+        <input id="searchInput" type="text" placeholder="ابحث بالاسم أو التصنيف..." oninput="renderPublishedList()" />
       </div>
 
-      <button type="button" class="btn btn-publish-links" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
-        💾 نشر تعديلات الروابط (<span id="pendingLinksCountBadge">0</span> معلقة)
+      <button type="button" class="btn btn-sky" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
+        💾 نشر تعديلات الروابط (<span id="pendingLinksBadge">0</span> معلقة)
       </button>
-      <div class="hint">تعديلات الروابط تُحفظ تلقائياً في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
+      <div class="hint">تعديلات الروابط تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
 
-      <div class="items-list" id="publishedItemsList"></div>
-    </div>
+      <div class="list" id="publishedList"></div>
+    </section>
 
-    <!-- 5. معاينة JSON ونسخه -->
-    <div class="box">
-      <h3>معاينة JSON</h3>
-      <textarea id="jsonOutput" placeholder="هنا سيظهر كود JSON..."></textarea>
-      <button type="button" class="btn btn-copy" onclick="copyJson()">📋 نسخ كود JSON</button>
-    </div>
+    <!-- 5. معاينة JSON -->
+    <section class="card">
+      <h2>معاينة JSON</h2>
+      <textarea id="jsonBox" placeholder="سيظهر هنا كود JSON..."></textarea>
+      <button type="button" class="btn btn-green" onclick="copyJson()">📋 نسخ كود JSON</button>
+    </section>
   </div>
 
   <script>
-    const CONFIG_STORAGE_KEY = "alawitv_gh_settings_v2";
-    const TEMP_ITEMS_STORAGE_KEY = "alawitv_temp_items_v2";
-    const PENDING_LINKS_STORAGE_KEY = "alawitv_pending_link_updates_v2";
-    const PUBLISHED_CACHE_STORAGE_KEY = "alawitv_published_cache_v2";
+    const SETTINGS_KEY = "alawitv_v3_settings";
+    const TEMP_KEY = "alawitv_v3_temp_items";
+    const PENDING_LINKS_KEY = "alawitv_v3_pending_links";
+    const PUBLISHED_CACHE_KEY = "alawitv_v3_published_cache";
 
     let sessionToken = "";
     let tempItems = [];
     let publishedItems = [];
     let pendingLinkUpdates = {};
-    let activePublishedFilter = "all";
-    let currentlyEditingKey = null;
+    let activeFilter = "all";
+    let editingKey = null;
 
-    function sanitizeToken(rawVal) {
-      return String(rawVal || "")
+    function sanitizeToken(val) {
+      return String(val || "")
         .replace(/[\s\u200B-\u200D\uFEFF]/g, "")
         .replace(/[^\x21-\x7E]/g, "");
     }
 
-    function setStatus(msg, type = "normal") {
-      const el = document.getElementById("statusMsg");
-      el.textContent = msg;
-      if (type === "error") {
-        el.style.color = "#fca5a5";
-        el.style.borderColor = "#7f1d1d";
-      } else if (type === "success") {
-        el.style.color = "#86efac";
-        el.style.borderColor = "#14532d";
-      } else if (type === "info") {
-        el.style.color = "#93c5fd";
-        el.style.borderColor = "#1e3a8a";
+    function setStatus(msg, level = "normal") {
+      const box = document.getElementById("statusBox");
+      box.textContent = msg;
+      if (level === "error") {
+        box.style.color = "#fca5a5";
+        box.style.borderColor = "#7f1d1d";
+      } else if (level === "success") {
+        box.style.color = "#86efac";
+        box.style.borderColor = "#14532d";
+      } else if (level === "info") {
+        box.style.color = "#93c5fd";
+        box.style.borderColor = "#1e3a8a";
       } else {
-        el.style.color = "#e5e7eb";
-        el.style.borderColor = "#292f3b";
+        box.style.color = "#e5e7eb";
+        box.style.borderColor = "#2b3140";
       }
     }
 
     function syncTokenInput() {
-      const tokenInput = document.getElementById("ghToken");
-      if (tokenInput) {
-        const cleaned = sanitizeToken(tokenInput.value);
-        if (tokenInput.value !== cleaned) {
-          tokenInput.value = cleaned;
-        }
-        sessionToken = cleaned;
+      const input = document.getElementById("ghToken");
+      if (!input) return;
+      const cleaned = sanitizeToken(input.value);
+      if (input.value !== cleaned) {
+        input.value = cleaned;
       }
+      sessionToken = cleaned;
     }
 
     function loadSettings() {
       try {
-        const raw = localStorage.getItem(CONFIG_STORAGE_KEY);
+        const raw = localStorage.getItem(SETTINGS_KEY);
         if (raw) {
-          const parsed = JSON.parse(raw);
-          if (typeof parsed.owner === "string" && parsed.owner.trim()) {
-            document.getElementById("ghOwner").value = parsed.owner.trim();
-          }
-          if (typeof parsed.repo === "string" && parsed.repo.trim()) {
-            document.getElementById("ghRepo").value = parsed.repo.trim();
-          }
-          if (typeof parsed.file === "string" && parsed.file.trim()) {
-            document.getElementById("ghFile").value = parsed.file.trim();
-          }
-          if (typeof parsed.branch === "string" && parsed.branch.trim()) {
-            document.getElementById("ghBranch").value = parsed.branch.trim();
-          }
+          const cfg = JSON.parse(raw);
+          if (cfg.owner) document.getElementById("ghOwner").value = cfg.owner;
+          if (cfg.repo) document.getElementById("ghRepo").value = cfg.repo;
+          if (cfg.file) document.getElementById("ghFile").value = cfg.file;
+          if (cfg.branch) document.getElementById("ghBranch").value = cfg.branch;
         }
       } catch (_) {}
       document.getElementById("ghToken").value = sessionToken || "";
     }
 
     function saveConfig() {
-      const ownerInput = document.getElementById("ghOwner").value.trim();
-      const repoInput = document.getElementById("ghRepo").value.trim();
-      const fileInput = document.getElementById("ghFile").value.trim();
-      const branchInput = document.getElementById("ghBranch").value.trim();
       syncTokenInput();
-
-      const settingsToSave = {
-        owner: ownerInput || "alisonecena-ops",
-        repo: repoInput || "-alawitv-data-v2",
-        file: fileInput || "videos.json",
-        branch: branchInput || "main"
+      const cfg = {
+        owner: document.getElementById("ghOwner").value.trim() || "alisonecena-ops",
+        repo: document.getElementById("ghRepo").value.trim() || "-alawitv-data-v2",
+        file: document.getElementById("ghFile").value.trim() || "videos.json",
+        branch: document.getElementById("ghBranch").value.trim() || "main"
       };
-
-      document.getElementById("ghOwner").value = settingsToSave.owner;
-      document.getElementById("ghRepo").value = settingsToSave.repo;
-      document.getElementById("ghFile").value = settingsToSave.file;
-      document.getElementById("ghBranch").value = settingsToSave.branch;
-
-      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(settingsToSave));
-
-      if (!sessionToken) {
-        setStatus("تم حفظ إعدادات المستودع. ملاحظة: لم يتم حفظ GitHub Token في المتصفح لأسباب أمنية؛ أدخله عند الحاجة.", "info");
-      } else {
-        setStatus("تم حفظ إعدادات المستودع (التوكن يبقى في الجلسة الحالية فقط ولا يُحفظ في localStorage).", "success");
-      }
+      document.getElementById("ghOwner").value = cfg.owner;
+      document.getElementById("ghRepo").value = cfg.repo;
+      document.getElementById("ghFile").value = cfg.file;
+      document.getElementById("ghBranch").value = cfg.branch;
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(cfg));
+      setStatus("تم حفظ إعدادات GitHub محلياً (التوكن يبقى في الجلسة فقط ولا يُحفظ في localStorage).", "success");
     }
 
     function config() {
-      const ownerEl = document.getElementById("ghOwner");
-      const repoEl = document.getElementById("ghRepo");
-      const fileEl = document.getElementById("ghFile");
-      const branchEl = document.getElementById("ghBranch");
-      const tokenEl = document.getElementById("ghToken");
-
-      const owner = (ownerEl ? ownerEl.value : "").trim() || "alisonecena-ops";
-      const repo = (repoEl ? repoEl.value : "").trim() || "-alawitv-data-v2";
-      const file = ((fileEl ? fileEl.value : "").trim() || "videos.json").replace(/^\/+/, "");
-      const branch = (branchEl ? branchEl.value : "").trim() || "main";
-      const rawToken = (tokenEl ? tokenEl.value : "") || sessionToken || "";
-      const token = sanitizeToken(rawToken);
-
-      if (tokenEl && tokenEl.value !== token) {
-        tokenEl.value = token;
+      const owner = (document.getElementById("ghOwner")?.value || "").trim() || "alisonecena-ops";
+      const repo = (document.getElementById("ghRepo")?.value || "").trim() || "-alawitv-data-v2";
+      const file = ((document.getElementById("ghFile")?.value || "").trim() || "videos.json").replace(/^\/+/, "");
+      const branch = (document.getElementById("ghBranch")?.value || "").trim() || "main";
+      const tokenInput = document.getElementById("ghToken");
+      const token = sanitizeToken((tokenInput ? tokenInput.value : "") || sessionToken || "");
+      if (tokenInput && tokenInput.value !== token) {
+        tokenInput.value = token;
       }
       if (token) {
         sessionToken = token;
       }
-
       return { owner, repo, file, branch, token };
     }
 
-    function validateGitHubConfig(cfg) {
+    function validateConfig(cfg) {
       if (!cfg.owner || !cfg.repo || !cfg.token) {
         return "خطأ: أدخل Owner وRepository وGitHub Token أولاً.";
       }
       return null;
     }
 
-    function loadPersistedData() {
+    function loadStorage() {
       try {
-        const tempRaw = localStorage.getItem(TEMP_ITEMS_STORAGE_KEY);
-        if (tempRaw) {
-          const parsedTemp = JSON.parse(tempRaw);
-          if (Array.isArray(parsedTemp)) {
-            tempItems = parsedTemp;
-          }
-        }
+        const t = JSON.parse(localStorage.getItem(TEMP_KEY) || "[]");
+        if (Array.isArray(t)) tempItems = t;
       } catch (_) {}
 
       try {
-        const pendingRaw = localStorage.getItem(PENDING_LINKS_STORAGE_KEY);
-        if (pendingRaw) {
-          const parsedPending = JSON.parse(pendingRaw);
-          if (parsedPending && typeof parsedPending === "object") {
-            pendingLinkUpdates = parsedPending;
-          }
-        }
+        const p = JSON.parse(localStorage.getItem(PENDING_LINKS_KEY) || "{}");
+        if (p && typeof p === "object") pendingLinkUpdates = p;
       } catch (_) {}
 
       try {
-        const pubRaw = localStorage.getItem(PUBLISHED_CACHE_STORAGE_KEY);
-        if (pubRaw) {
-          const parsedPub = JSON.parse(pubRaw);
-          if (Array.isArray(parsedPub)) {
-            publishedItems = parsedPub;
-          }
-        }
+        const c = JSON.parse(localStorage.getItem(PUBLISHED_CACHE_KEY) || "[]");
+        if (Array.isArray(c)) publishedItems = c;
       } catch (_) {}
     }
 
-    function saveTempItems() {
-      localStorage.setItem(TEMP_ITEMS_STORAGE_KEY, JSON.stringify(tempItems));
+    function saveTemp() {
+      localStorage.setItem(TEMP_KEY, JSON.stringify(tempItems));
     }
 
-    function savePendingLinkUpdates() {
-      localStorage.setItem(PENDING_LINKS_STORAGE_KEY, JSON.stringify(pendingLinkUpdates));
+    function savePendingLinks() {
+      localStorage.setItem(PENDING_LINKS_KEY, JSON.stringify(pendingLinkUpdates));
     }
 
     function savePublishedCache() {
-      localStorage.setItem(PUBLISHED_CACHE_STORAGE_KEY, JSON.stringify(publishedItems));
+      localStorage.setItem(PUBLISHED_CACHE_KEY, JSON.stringify(publishedItems));
     }
 
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
-      const epSection = document.getElementById("episodesSection");
-      const wrSection = document.getElementById("wrestlingSection");
+      const epBox = document.getElementById("episodesBox");
+      const wrBox = document.getElementById("wrestlingBox");
 
       if (cat === "مسلسلات") {
-        epSection.classList.remove("hidden");
+        epBox.classList.remove("hidden");
       } else {
-        epSection.classList.add("hidden");
+        epBox.classList.add("hidden");
         document.getElementById("episodesCount").value = "";
       }
 
-      if (cat === "مصارعة" || cat === "مصارعة WWE" || cat === "مصارعة AEW") {
-        wrSection.classList.remove("hidden");
-        if (cat === "مصارعة WWE") {
-          document.getElementById("promotion").value = "WWE";
-        } else if (cat === "مصارعة AEW") {
-          document.getElementById("promotion").value = "AEW";
-        }
+      if (cat === "مصارعة WWE" || cat === "مصارعة AEW") {
+        wrBox.classList.remove("hidden");
+        const promo = cat === "مصارعة WWE" ? "WWE" : "AEW";
+        document.getElementById("promotion").value = promo;
+        document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+        const activeChip = document.getElementById(promo === "WWE" ? "chip-wwe" : "chip-aew");
+        if (activeChip) activeChip.classList.add("active");
       } else {
-        wrSection.classList.add("hidden");
+        wrBox.classList.add("hidden");
         document.getElementById("promotion").value = "";
-        document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
       }
     }
 
-    function setPromotion(name, btn) {
+    function selectPromotion(name, btn) {
       document.getElementById("promotion").value = name;
-      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
-      if (btn) {
-        btn.classList.add("active");
-      }
-      if (name === "WWE") {
-        document.getElementById("category").value = "مصارعة WWE";
-      } else if (name === "AEW") {
-        document.getElementById("category").value = "مصارعة AEW";
-      }
+      document.getElementById("category").value = name === "WWE" ? "مصارعة WWE" : "مصارعة AEW";
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
     }
 
     function buildEntryFromForm() {
       const title = document.getElementById("title").value.trim();
       const description = document.getElementById("description").value.trim();
-      const categorySelect = document.getElementById("category").value;
-      const promotion = document.getElementById("promotion").value.trim();
+      const catVal = document.getElementById("category").value;
+      const promoVal = document.getElementById("promotion").value.trim();
       const episodesRaw = document.getElementById("episodesCount").value.trim();
       const thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
       const videoUrl = document.getElementById("videoUrl").value.trim();
@@ -668,11 +594,9 @@
         return { error: "يرجى إدخال الاسم ورابط الفيديو على الأقل." };
       }
 
-      let finalCategory = categorySelect;
-      if (categorySelect === "مصارعة" && promotion) {
-        finalCategory = promotion.toUpperCase() === "WWE" || promotion.toUpperCase() === "AEW"
-          ? `مصارعة ${promotion.toUpperCase()}`
-          : `مصارعة - ${promotion}`;
+      let finalCategory = catVal;
+      if (promoVal === "WWE" || promoVal === "AEW") {
+        finalCategory = `مصارعة ${promoVal}`;
       }
 
       const entry = {
@@ -684,24 +608,24 @@
         category: finalCategory
       };
 
-      if (categorySelect === "مسلسلات" && episodesRaw) {
-        const parsedEpisodes = parseInt(episodesRaw, 10);
-        if (!Number.isNaN(parsedEpisodes) && parsedEpisodes > 0) {
-          entry.episodesCount = parsedEpisodes;
+      if (catVal === "مسلسلات" && episodesRaw) {
+        const epNum = parseInt(episodesRaw, 10);
+        if (!Number.isNaN(epNum) && epNum > 0) {
+          entry.episodesCount = epNum;
         }
       }
 
       return { entry };
     }
 
-    function clearFormInputs() {
+    function resetForm() {
       document.getElementById("title").value = "";
       document.getElementById("description").value = "";
       document.getElementById("thumbnailUrl").value = "";
       document.getElementById("videoUrl").value = "";
       document.getElementById("episodesCount").value = "";
       document.getElementById("promotion").value = "";
-      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
     }
 
     function addToTempList() {
@@ -711,35 +635,35 @@
         return;
       }
       tempItems.push(res.entry);
-      saveTempItems();
-      renderTempItems();
+      saveTemp();
+      renderTempList();
       updateJsonPreview();
-      clearFormInputs();
-      setStatus("تمت إضافة العنصر إلى المحتوى المؤقت وحُفظ في localStorage.", "success");
+      resetForm();
+      setStatus("تمت الإضافة إلى المحتوى المؤقت وحُفظ في localStorage.", "success");
     }
 
     function removeTempItem(index) {
       if (index < 0 || index >= tempItems.length) return;
       tempItems.splice(index, 1);
-      saveTempItems();
-      renderTempItems();
+      saveTemp();
+      renderTempList();
       updateJsonPreview();
-      setStatus("تم حذف العنصر من المحتوى المؤقت.", "info");
+      setStatus("تم حذف العنصر المؤقت.", "info");
     }
 
-    function clearAllTempItems() {
+    function clearAllTemp() {
       if (tempItems.length === 0) {
-        setStatus("القائمة المؤقتة فارغة بالفعل.", "info");
+        setStatus("القائمة المؤقتة فارغة.", "info");
         return;
       }
       tempItems = [];
-      saveTempItems();
-      renderTempItems();
+      saveTemp();
+      renderTempList();
       updateJsonPreview();
       setStatus("تم حذف القائمة المؤقتة كلها.", "success");
     }
 
-    function escapeHtml(str) {
+    function esc(str) {
       return String(str || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -747,164 +671,140 @@
         .replace(/"/g, "&quot;");
     }
 
-    function renderTempItems() {
-      const listEl = document.getElementById("tempItemsList");
-      const badgeEl = document.getElementById("tempCountBadge");
-      badgeEl.textContent = String(tempItems.length);
-      listEl.innerHTML = "";
+    function renderTempList() {
+      const list = document.getElementById("tempList");
+      document.getElementById("tempBadge").textContent = String(tempItems.length);
+      list.innerHTML = "";
 
       if (tempItems.length === 0) {
-        listEl.innerHTML = `<div class="empty-msg">لا يوجد محتوى في القائمة المؤقتة حالياً.</div>`;
+        list.innerHTML = `<div class="empty">لا يوجد محتوى مؤقت حالياً.</div>`;
         return;
       }
 
       tempItems.forEach((item, idx) => {
-        const epText = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
+        const epInfo = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
         const card = document.createElement("div");
-        card.className = "item-card";
+        card.className = "entry-card";
         card.innerHTML = `
-          <div class="item-top">
+          <div class="entry-head">
             <div>
-              <div class="item-title">${escapeHtml(item.title)}</div>
-              <div class="item-meta">التصنيف: ${escapeHtml(item.category)}${epText}</div>
-              <div class="item-meta">الرابط: ${escapeHtml(item.videoUrl)}</div>
+              <div class="entry-title">${esc(item.title)}</div>
+              <div class="entry-meta">التصنيف: ${esc(item.category)}${epInfo}</div>
+              <div class="entry-meta">الرابط: ${esc(item.videoUrl)}</div>
             </div>
-            <button type="button" class="btn-sm btn-del" onclick="removeTempItem(${idx})">حذف</button>
+            <button type="button" class="btn-mini btn-danger-soft" onclick="removeTempItem(${idx})">حذف</button>
           </div>
         `;
-        listEl.appendChild(card);
+        list.appendChild(card);
       });
     }
 
-    function getItemKey(item, idx) {
+    function itemKey(item, idx) {
       if (item && item.id !== undefined && item.id !== null && String(item.id).trim() !== "") {
         return `id:${String(item.id)}`;
       }
       return `idx:${idx}:${String(item.title || "")}`;
     }
 
-    function setPublishedFilter(filterVal, btn) {
-      activePublishedFilter = filterVal;
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      if (btn) {
-        btn.classList.add("active");
-      }
-      renderPublishedItems();
+    function setFilter(val, btn) {
+      activeFilter = val;
+      document.querySelectorAll(".filter-chip").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      renderPublishedList();
     }
 
-    function matchesFilter(category) {
-      if (activePublishedFilter === "all") return true;
-      const cat = String(category || "").trim().toLowerCase();
-      const target = activePublishedFilter.toLowerCase();
-      if (target === "مصارعة wwe") {
-        return cat === "مصارعة wwe" || cat.includes("wwe");
-      }
-      if (target === "مصارعة aew") {
-        return cat === "مصارعة aew" || cat.includes("aew");
-      }
-      return cat === target || cat.includes(target);
+    function matchCategoryFilter(cat) {
+      if (activeFilter === "all") return true;
+      const c = String(cat || "").trim().toLowerCase();
+      const f = activeFilter.toLowerCase();
+      if (f === "مصارعة wwe") return c.includes("wwe");
+      if (f === "مصارعة aew") return c.includes("aew");
+      return c === f || c.includes(f);
     }
 
-    function updatePendingLinksBadge() {
-      const count = Object.keys(pendingLinkUpdates).length;
-      const el = document.getElementById("pendingLinksCountBadge");
-      if (el) {
-        el.textContent = String(count);
-      }
-    }
-
-    function renderPublishedItems() {
-      const listEl = document.getElementById("publishedItemsList");
-      const badgeEl = document.getElementById("publishedCountBadge");
-      const searchVal = (document.getElementById("publishedSearch")?.value || "").trim().toLowerCase();
-
-      badgeEl.textContent = String(publishedItems.length);
-      updatePendingLinksBadge();
-      listEl.innerHTML = "";
+    function renderPublishedList() {
+      const list = document.getElementById("publishedList");
+      const query = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+      document.getElementById("publishedBadge").textContent = String(publishedItems.length);
+      document.getElementById("pendingLinksBadge").textContent = String(Object.keys(pendingLinkUpdates).length);
+      list.innerHTML = "";
 
       if (publishedItems.length === 0) {
-        listEl.innerHTML = `<div class="empty-msg">لا يوجد محتوى منشور معروض حالياً. اضغط «تحديث من GitHub» لجلب العناصر أو انشر محتوى جديد.</div>`;
+        list.innerHTML = `<div class="empty">لا يوجد محتوى منشور معروض حالياً. اضغط «تحديث من GitHub» أو انشر محتوى جديد.</div>`;
         return;
       }
 
-      const filtered = publishedItems
-        .map((item, idx) => ({ item, idx, key: getItemKey(item, idx) }))
+      const rows = publishedItems
+        .map((item, idx) => ({ item, idx, key: itemKey(item, idx) }))
         .filter(({ item }) => {
-          if (!matchesFilter(item.category)) return false;
-          if (!searchVal) return true;
-          const t = String(item.title || "").toLowerCase();
-          const c = String(item.category || "").toLowerCase();
-          return t.includes(searchVal) || c.includes(searchVal);
+          if (!matchCategoryFilter(item.category)) return false;
+          if (!query) return true;
+          return String(item.title || "").toLowerCase().includes(query) ||
+                 String(item.category || "").toLowerCase().includes(query);
         });
 
-      if (filtered.length === 0) {
-        listEl.innerHTML = `<div class="empty-msg">لا توجد عناصر مطابقة للفلتر أو البحث الحالي.</div>`;
+      if (rows.length === 0) {
+        list.innerHTML = `<div class="empty">لا توجد عناصر مطابقة للفلتر أو البحث.</div>`;
         return;
       }
 
-      filtered.forEach(({ item, idx, key }) => {
+      rows.forEach(({ item, idx, key }) => {
         const pending = pendingLinkUpdates[key];
-        const currentDisplayedUrl = pending ? pending.newVideoUrl : (item.videoUrl || "");
-        const epText = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
-        const isEditing = currentlyEditingKey === key;
+        const displayUrl = pending ? pending.newVideoUrl : (item.videoUrl || "");
+        const epInfo = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
+        const isOpen = editingKey === key;
 
         const card = document.createElement("div");
-        card.className = "item-card";
-
+        card.className = "entry-card";
         card.innerHTML = `
-          <div class="item-top">
+          <div class="entry-head">
             <div>
-              <div class="item-title">${escapeHtml(item.title || "بدون اسم")}</div>
-              <div class="item-meta">التصنيف: ${escapeHtml(item.category || "غير محدد")}${epText}</div>
-              <div class="item-meta">رابط الفيديو: ${escapeHtml(currentDisplayedUrl)}</div>
-              ${pending ? `<span class="pending-tag">تعديل رابط محفوظ في localStorage (بانتظار النشر)</span>` : ""}
+              <div class="entry-title">${esc(item.title || "بدون اسم")}</div>
+              <div class="entry-meta">التصنيف: ${esc(item.category || "غير محدد")}${epInfo}</div>
+              <div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>
+              ${pending ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
             </div>
-            <button type="button" class="btn-sm btn-edit-link" id="edit-btn-${idx}">تعديل الرابط</button>
+            <button type="button" class="btn-mini btn-blue" id="btn-edit-${idx}">تعديل الرابط</button>
           </div>
-          <div class="edit-box ${isEditing ? "" : "hidden"}" id="edit-box-${idx}">
-            <label for="edit-input-${idx}">رابط الفيديو الجديد:</label>
-            <input type="url" id="edit-input-${idx}" value="${escapeHtml(currentDisplayedUrl)}" placeholder="https://..." />
-            <div class="edit-actions">
-              <button type="button" class="btn-sm btn-save-pending" id="save-pending-btn-${idx}">حفظ التعديل في localStorage</button>
-              <button type="button" class="btn-sm btn-cancel-edit" id="cancel-edit-btn-${idx}">إلغاء</button>
+          <div class="edit-panel ${isOpen ? "" : "hidden"}" id="panel-edit-${idx}">
+            <label for="input-url-${idx}">رابط الفيديو الجديد:</label>
+            <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
+            <div class="row-actions">
+              <button type="button" class="btn-mini btn-green" id="btn-save-url-${idx}">حفظ في localStorage</button>
+              <button type="button" class="btn-mini btn-gray" id="btn-cancel-url-${idx}">إلغاء</button>
             </div>
           </div>
         `;
+        list.appendChild(card);
 
-        listEl.appendChild(card);
-
-        document.getElementById(`edit-btn-${idx}`).addEventListener("click", () => {
-          currentlyEditingKey = currentlyEditingKey === key ? null : key;
-          renderPublishedItems();
+        document.getElementById(`btn-edit-${idx}`).addEventListener("click", () => {
+          editingKey = editingKey === key ? null : key;
+          renderPublishedList();
         });
 
-        document.getElementById(`cancel-edit-btn-${idx}`).addEventListener("click", () => {
-          currentlyEditingKey = null;
-          renderPublishedItems();
+        document.getElementById(`btn-cancel-url-${idx}`).addEventListener("click", () => {
+          editingKey = null;
+          renderPublishedList();
         });
 
-        document.getElementById(`save-pending-btn-${idx}`).addEventListener("click", () => {
-          const inputEl = document.getElementById(`edit-input-${idx}`);
-          const newUrl = inputEl ? inputEl.value.trim() : "";
+        document.getElementById(`btn-save-url-${idx}`).addEventListener("click", () => {
+          const newUrl = (document.getElementById(`input-url-${idx}`)?.value || "").trim();
           if (!newUrl) {
-            setStatus("أدخل رابط الفيديو الجديد قبل حفظ التعديل.", "error");
+            setStatus("أدخل رابط الفيديو الجديد قبل الحفظ.", "error");
             return;
           }
-
           pendingLinkUpdates[key] = {
             key,
             itemId: item.id !== undefined ? String(item.id) : "",
             title: item.title || "",
             category: item.category || "",
-            newVideoUrl: newUrl,
-            updatedAt: new Date().toISOString()
+            newVideoUrl: newUrl
           };
-
-          savePendingLinkUpdates();
-          currentlyEditingKey = null;
-          renderPublishedItems();
+          savePendingLinks();
+          editingKey = null;
+          renderPublishedList();
           updateJsonPreview();
-          setStatus(`تم حفظ تعديل رابط «${item.title}» في localStorage. اضغط «نشر تعديلات الروابط» لرفعه إلى GitHub.`, "success");
+          setStatus(`تم حفظ تعديل رابط «${item.title}» في localStorage.`, "success");
         });
       });
     }
@@ -928,155 +828,130 @@
       return new TextDecoder().decode(bytes);
     }
 
-    function extractVideosArray(parsedJson) {
-      if (parsedJson && Array.isArray(parsedJson.videos)) {
-        return parsedJson.videos;
-      }
-      if (Array.isArray(parsedJson)) {
-        return parsedJson;
-      }
+    function extractVideos(parsed) {
+      if (parsed && Array.isArray(parsed.videos)) return parsed.videos;
+      if (Array.isArray(parsed)) return parsed;
       return [];
     }
 
-    async function fetchLatestGitHubFile(cfg) {
+    async function fetchRemoteFile(cfg) {
       const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
       const headers = {
         "Authorization": `Bearer ${cfg.token}`,
         "Accept": "application/vnd.github+json",
         "Content-Type": "application/json"
       };
-
       const res = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
       if (res.status === 200) {
-        const fileData = await res.json();
+        const json = await res.json();
         let list = [];
-        const decoded = base64ToUtf8(fileData.content || "");
+        const decoded = base64ToUtf8(json.content || "");
         if (decoded.trim()) {
-          list = extractVideosArray(JSON.parse(decoded));
+          list = extractVideos(JSON.parse(decoded));
         }
-        return { apiUrl, headers, sha: fileData.sha, videos: list };
+        return { apiUrl, headers, sha: json.sha, videos: list };
       } else if (res.status === 404) {
         return { apiUrl, headers, sha: null, videos: [] };
       } else {
         const errText = await res.text();
-        throw new Error(`تعذر قراءة الملف من GitHub (${res.status}): ${errText}`);
+        throw new Error(`تعذر قراءة الملف (${res.status}): ${errText}`);
       }
     }
 
-    async function loadPublishedContent(showToast = true) {
+    async function loadPublishedContent(showMsg = true) {
       const cfg = config();
-      const err = validateGitHubConfig(cfg);
+      const err = validateConfig(cfg);
       if (err) {
-        if (showToast) {
-          setStatus(err, "error");
-        }
-        renderPublishedItems();
+        if (showMsg) setStatus(err, "error");
+        renderPublishedList();
         return;
       }
 
-      const refreshBtn = document.getElementById("refreshBtn");
-      if (refreshBtn) refreshBtn.disabled = true;
-      if (showToast) {
-        setStatus("جاري جلب أحدث نسخة من videos.json من GitHub...", "info");
-      }
+      const btn = document.getElementById("refreshBtn");
+      if (btn) btn.disabled = true;
+      if (showMsg) setStatus("جاري جلب أحدث نسخة من videos.json من GitHub...", "info");
 
       try {
-        const latest = await fetchLatestGitHubFile(cfg);
-        publishedItems = latest.videos;
+        const remote = await fetchRemoteFile(cfg);
+        publishedItems = remote.videos;
         savePublishedCache();
-        renderPublishedItems();
+        renderPublishedList();
         updateJsonPreview();
-        if (showToast) {
+        if (showMsg) {
           setStatus(`تم جلب ${publishedItems.length} عنصر منشور من ${cfg.file}.`, "success");
         }
       } catch (e) {
         setStatus(`تعذر جلب المحتوى المنشور: ${e.message}`, "error");
-        renderPublishedItems();
+        renderPublishedList();
       } finally {
-        if (refreshBtn) refreshBtn.disabled = false;
+        if (btn) btn.disabled = false;
       }
     }
 
-    function applyPendingUpdatesToList(list) {
-      const pendingList = Object.values(pendingLinkUpdates);
-      if (pendingList.length === 0) {
-        return { updatedList: [...list], appliedCount: 0 };
-      }
+    function applyPendingLinks(list) {
+      const updates = Object.values(pendingLinkUpdates);
+      if (updates.length === 0) return [...list];
 
-      let appliedCount = 0;
-      const updatedList = list.map((item, idx) => {
-        const key = getItemKey(item, idx);
-        let matchedUpdate = pendingLinkUpdates[key];
-
-        if (!matchedUpdate && item && item.id !== undefined && item.id !== null) {
-          matchedUpdate = pendingList.find(u => u.itemId && String(u.itemId) === String(item.id));
+      return list.map((item, idx) => {
+        const k = itemKey(item, idx);
+        let match = pendingLinkUpdates[k];
+        if (!match && item && item.id !== undefined) {
+          match = updates.find(u => u.itemId && String(u.itemId) === String(item.id));
         }
-        if (!matchedUpdate && item && item.title) {
-          matchedUpdate = pendingList.find(u => u.title && String(u.title) === String(item.title));
+        if (!match && item && item.title) {
+          match = updates.find(u => u.title && String(u.title) === String(item.title));
         }
-
-        if (matchedUpdate && matchedUpdate.newVideoUrl) {
-          appliedCount++;
-          return {
-            ...item,
-            videoUrl: matchedUpdate.newVideoUrl
-          };
+        if (match && match.newVideoUrl) {
+          return { ...item, videoUrl: match.newVideoUrl };
         }
         return item;
       });
-
-      return { updatedList, appliedCount };
     }
 
     async function publish() {
       const cfg = config();
-      const cfgErr = validateGitHubConfig(cfg);
-      if (cfgErr) {
-        setStatus(cfgErr, "error");
+      const err = validateConfig(cfg);
+      if (err) {
+        setStatus(err, "error");
         return;
       }
 
-      const newEntries = [...tempItems];
-      const hasFormTitle = document.getElementById("title").value.trim();
-      const hasFormUrl = document.getElementById("videoUrl").value.trim();
-
-      if (hasFormTitle || hasFormUrl) {
+      const additions = [...tempItems];
+      if (document.getElementById("title").value.trim() || document.getElementById("videoUrl").value.trim()) {
         const formRes = buildEntryFromForm();
         if (formRes.error) {
           setStatus(formRes.error, "error");
           return;
         }
-        newEntries.push(formRes.entry);
+        additions.push(formRes.entry);
       }
 
-      const hasPendingLinks = Object.keys(pendingLinkUpdates).length > 0;
-      if (newEntries.length === 0 && !hasPendingLinks) {
-        setStatus("أضف محتوى للمؤقت أو أدخل بيانات عنصر للنشر أولاً.", "error");
+      const hasPending = Object.keys(pendingLinkUpdates).length > 0;
+      if (additions.length === 0 && !hasPending) {
+        setStatus("أضف محتوى أو أدخل بيانات عنصر قبل النشر.", "error");
         return;
       }
 
-      const publishBtn = document.getElementById("publishBtn");
-      publishBtn.disabled = true;
-      setStatus("جاري جلب أحدث نسخة من videos.json ونشر التحديثات إلى GitHub...", "info");
+      const btn = document.getElementById("publishBtn");
+      btn.disabled = true;
+      setStatus("جاري جلب أحدث نسخة من videos.json وإرسال التحديث إلى GitHub...", "info");
 
       try {
-        const latest = await fetchLatestGitHubFile(cfg);
-        const { updatedList } = applyPendingUpdatesToList(latest.videos);
-        const mergedVideos = [...updatedList, ...newEntries];
-        const finalJsonObj = { videos: mergedVideos };
-        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
+        const remote = await fetchRemoteFile(cfg);
+        const updatedExisting = applyPendingLinks(remote.videos);
+        const merged = [...updatedExisting, ...additions];
+        const payloadObj = { videos: merged };
+        const formatted = JSON.stringify(payloadObj, null, 2) + "\n";
 
-        const putBody = {
-          message: `Update videos.json (${newEntries.length} added)`,
-          content: utf8ToBase64(formattedJson),
-          branch: cfg.branch,
-          ...(latest.sha ? { sha: latest.sha } : {})
-        };
-
-        const putRes = await fetch(latest.apiUrl, {
+        const putRes = await fetch(remote.apiUrl, {
           method: "PUT",
-          headers: latest.headers,
-          body: JSON.stringify(putBody)
+          headers: remote.headers,
+          body: JSON.stringify({
+            message: `Update videos.json (${additions.length} added)`,
+            content: utf8ToBase64(formatted),
+            branch: cfg.branch,
+            ...(remote.sha ? { sha: remote.sha } : {})
+          })
         });
 
         if (!putRes.ok) {
@@ -1084,42 +959,41 @@
           throw new Error(errJson.message || `فشل النشر (${putRes.status})`);
         }
 
-        publishedItems = mergedVideos;
+        publishedItems = merged;
         savePublishedCache();
 
-        if (newEntries.length > 0) {
+        if (additions.length > 0) {
           tempItems = [];
-          saveTempItems();
-          clearFormInputs();
+          saveTemp();
+          resetForm();
         }
-
-        if (hasPendingLinks) {
+        if (hasPending) {
           pendingLinkUpdates = {};
-          savePendingLinkUpdates();
+          savePendingLinks();
         }
 
-        renderTempItems();
-        renderPublishedItems();
+        renderTempList();
+        renderPublishedList();
         updateJsonPreview();
-        setStatus(`تم إرسال طلب النشر إلى ${cfg.file}؛ تأكد من ظهوره في GitHub والتطبيق بعد التحديث.`, "info");
+        setStatus(`تم إرسال طلب النشر إلى ${cfg.file}؛ تحقق من ظهوره في GitHub والتطبيق بعد التحديث.`, "info");
       } catch (e) {
         setStatus(`فشل النشر (تم الإبقاء على بياناتك المؤقتة والمعلقة): ${e.message}`, "error");
       } finally {
-        publishBtn.disabled = false;
+        btn.disabled = false;
       }
     }
 
     async function publishPendingLinkUpdates() {
       const cfg = config();
-      const cfgErr = validateGitHubConfig(cfg);
-      if (cfgErr) {
-        setStatus(cfgErr, "error");
+      const err = validateConfig(cfg);
+      if (err) {
+        setStatus(err, "error");
         return;
       }
 
-      const pendingCount = Object.keys(pendingLinkUpdates).length;
-      if (pendingCount === 0) {
-        setStatus("لا توجد تعديلات روابط معلقة لنشرها.", "info");
+      const count = Object.keys(pendingLinkUpdates).length;
+      if (count === 0) {
+        setStatus("لا توجد تعديلات روابط معلقة.", "info");
         return;
       }
 
@@ -1128,22 +1002,20 @@
       setStatus("جاري جلب أحدث نسخة من videos.json وتطبيق تعديلات الروابط...", "info");
 
       try {
-        const latest = await fetchLatestGitHubFile(cfg);
-        const { updatedList } = applyPendingUpdatesToList(latest.videos);
-        const finalJsonObj = { videos: updatedList };
-        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
+        const remote = await fetchRemoteFile(cfg);
+        const updatedList = applyPendingLinks(remote.videos);
+        const payloadObj = { videos: updatedList };
+        const formatted = JSON.stringify(payloadObj, null, 2) + "\n";
 
-        const putBody = {
-          message: `Update video links in videos.json (${pendingCount} link(s))`,
-          content: utf8ToBase64(formattedJson),
-          branch: cfg.branch,
-          ...(latest.sha ? { sha: latest.sha } : {})
-        };
-
-        const putRes = await fetch(latest.apiUrl, {
+        const putRes = await fetch(remote.apiUrl, {
           method: "PUT",
-          headers: latest.headers,
-          body: JSON.stringify(putBody)
+          headers: remote.headers,
+          body: JSON.stringify({
+            message: `Update video links (${count}) in videos.json`,
+            content: utf8ToBase64(formatted),
+            branch: cfg.branch,
+            ...(remote.sha ? { sha: remote.sha } : {})
+          })
         });
 
         if (!putRes.ok) {
@@ -1154,9 +1026,9 @@
         publishedItems = updatedList;
         savePublishedCache();
         pendingLinkUpdates = {};
-        savePendingLinkUpdates();
+        savePendingLinks();
 
-        renderPublishedItems();
+        renderPublishedList();
         updateJsonPreview();
         setStatus(`تم إرسال تعديلات الروابط إلى ${cfg.file}؛ تحقق من التحديث في GitHub والتطبيق.`, "info");
       } catch (e) {
@@ -1167,20 +1039,14 @@
     }
 
     function updateJsonPreview() {
-      const previewSource = publishedItems.length > 0 || tempItems.length === 0
-        ? {
-            videos: [
-              ...applyPendingUpdatesToList(publishedItems).updatedList,
-              ...tempItems
-            ]
-          }
-        : { videos: tempItems };
-
-      document.getElementById("jsonOutput").value = JSON.stringify(previewSource, null, 2);
+      const baseList = publishedItems.length > 0 || tempItems.length === 0
+        ? [...applyPendingLinks(publishedItems), ...tempItems]
+        : [...tempItems];
+      document.getElementById("jsonBox").value = JSON.stringify({ videos: baseList }, null, 2);
     }
 
     function copyJson() {
-      const box = document.getElementById("jsonOutput");
+      const box = document.getElementById("jsonBox");
       if (!box.value.trim()) {
         setStatus("لا يوجد كود JSON لنسخه.", "error");
         return;
@@ -1189,18 +1055,18 @@
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(box.value).catch(() => {});
       }
-      setStatus("تم نسخ كود JSON إلى الحافظة.", "success");
+      setStatus("تم نسخ كود JSON.", "success");
     }
 
     loadSettings();
-    loadPersistedData();
+    loadStorage();
     handleCategoryChange();
-    renderTempItems();
-    renderPublishedItems();
+    renderTempList();
+    renderPublishedList();
     updateJsonPreview();
 
-    const initialCfg = config();
-    if (initialCfg.owner && initialCfg.repo && initialCfg.token) {
+    const startCfg = config();
+    if (startCfg.owner && startCfg.repo && startCfg.token) {
       loadPublishedContent(false);
     }
   </script>
