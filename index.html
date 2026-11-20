@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة إضافة المحتوى - alawiTV</title>
+  <title>لوحة النشر المباشر - alawiTV</title>
   <style>
     * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
     body {
@@ -13,7 +13,7 @@
       color: #f3f4f6;
     }
     .container {
-      max-width: 640px;
+      max-width: 680px;
       margin: 0 auto;
       background: #181b22;
       border: 1px solid #2a2f3a;
@@ -25,18 +25,38 @@
       font-size: 20px;
       color: #ffffff;
     }
+    h3 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      color: #e5e7eb;
+    }
+    .settings-box {
+      background: #12151b;
+      border: 1px solid #292f3b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 560px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
     .field {
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
     label {
       display: block;
       margin-bottom: 6px;
-      font-size: 14px;
+      font-size: 13px;
       color: #d1d5db;
     }
     input, select, textarea {
       width: 100%;
-      padding: 11px 12px;
+      padding: 10px 12px;
       border-radius: 8px;
       border: 1px solid #323846;
       background: #111318;
@@ -67,9 +87,31 @@
       border-color: #ef4444;
       color: #fff;
     }
+    .btn-save-cfg {
+      padding: 9px 14px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+    }
     .btn-add {
       width: 100%;
       padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #374151;
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-publish {
+      width: 100%;
+      padding: 13px;
       border: none;
       border-radius: 8px;
       background: #dc2626;
@@ -77,22 +119,26 @@
       font-size: 15px;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 4px;
+      margin-top: 10px;
+    }
+    .btn-publish:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
     .btn-copy {
       width: 100%;
-      padding: 12px;
+      padding: 11px;
       border: none;
       border-radius: 8px;
       background: #16a34a;
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 10px;
     }
     .items-list {
-      margin-top: 18px;
+      margin-top: 16px;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -123,7 +169,7 @@
       font-size: 12px;
     }
     textarea {
-      min-height: 220px;
+      min-height: 190px;
       margin-top: 14px;
       direction: ltr;
       text-align: left;
@@ -131,21 +177,56 @@
       font-size: 12px;
     }
     .hidden { display: none; }
-    .toast {
-      margin-top: 8px;
+    .status {
+      margin-top: 10px;
       font-size: 13px;
-      color: #86efac;
-      min-height: 18px;
+      min-height: 20px;
+      line-height: 1.5;
+    }
+    .hint {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-top: 4px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2>إضافة محتوى جديد (alawiTV)</h2>
+    <h2>لوحة النشر المباشر (alawiTV)</h2>
+
+    <div class="settings-box">
+      <h3>إعدادات الربط مع GitHub (تُحفظ محلياً في المتصفح)</h3>
+      <div class="grid-2">
+        <div class="field">
+          <label for="ghOwner">اسم المستخدم (Owner):</label>
+          <input id="ghOwner" type="text" placeholder="مثال: alisonecena-ops" />
+        </div>
+        <div class="field">
+          <label for="ghRepo">اسم المستودع (Repo):</label>
+          <input id="ghRepo" type="text" placeholder="مثال: -alawitv-data-v2" />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label for="ghFile">مسار ملف البيانات (File Path):</label>
+          <input id="ghFile" type="text" value="data.json" placeholder="data.json" />
+        </div>
+        <div class="field">
+          <label for="ghBranch">الفرع (Branch):</label>
+          <input id="ghBranch" type="text" value="main" placeholder="main" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="ghToken">GitHub Token (بصلاحية Contents: Read & Write):</label>
+        <input id="ghToken" type="password" placeholder="github_pat_..." />
+        <div class="hint">لا تشارك التوكن مع أي شخص، ويُستخدم فقط لرفع التحديث مباشرة إلى ملف البيانات.</div>
+      </div>
+      <button type="button" class="btn-save-cfg" onclick="saveConfig()">حفظ إعدادات الربط</button>
+    </div>
 
     <div class="field">
       <label for="title">الاسم (فيلم، مسلسل، قناة، أو عرض مصارعة):</label>
-      <input id="title" type="text" placeholder="مثال: WWE RAW أو Spider-Man" />
+      <input id="title" type="text" placeholder="مثال: AEW Dynamite أو WWE RAW" />
     </div>
 
     <div class="field">
@@ -177,26 +258,61 @@
       <input id="streamUrl" type="url" placeholder="https://..." />
     </div>
 
-    <button type="button" class="btn-add" onclick="addItem()">+ إضافة للقائمة</button>
+    <button type="button" class="btn-add" onclick="addToLocalList()">+ إضافة للقائمة المؤقتة</button>
+    <button type="button" class="btn-publish" id="publishBtn" onclick="publishDirectly()">🚀 نشر مباشرة إلى GitHub</button>
+
+    <div class="status" id="statusMsg"></div>
 
     <div class="items-list" id="itemsList"></div>
 
     <textarea id="jsonOutput" placeholder="هنا سيظهر كود JSON..."></textarea>
-    <button type="button" class="btn-copy" onclick="copyJson()">📋 نسخ الكود للـ GitHub</button>
-    <div class="toast" id="toast"></div>
+    <button type="button" class="btn-copy" onclick="copyJson()">📋 نسخ كود JSON</button>
   </div>
 
   <script>
-    const items = [
-      {
-        "id": 1795184428662,
-        "title": "AEW Dynamite",
-        "category": "wrestling",
-        "promotion": "AEW",
-        "poster": "https://share.google/6XTQR9LPwwS9bHjZq",
-        "url": "https://ok6-29.vkuser.net/expires/1795270689882/srcIp/151.244.152.195/pr/10/srcAg/CHROME_ANDROID/ch/-536166974/ms/95.142.206.33/type/3/sig/7sSE1jzCw0c/ct/8/urls/185.180.203.46%3B176.112.172.39/clientType/0/zs/65/id/20501661879033/video/"
-      }
-    ];
+    const CONFIG_KEY = "alawitv_gh_publish_config_v1";
+    const items = [];
+
+    function loadConfig() {
+      try {
+        const raw = localStorage.getItem(CONFIG_KEY);
+        if (!raw) return;
+        const cfg = JSON.parse(raw);
+        if (cfg.owner) document.getElementById("ghOwner").value = cfg.owner;
+        if (cfg.repo) document.getElementById("ghRepo").value = cfg.repo;
+        if (cfg.file) document.getElementById("ghFile").value = cfg.file;
+        if (cfg.branch) document.getElementById("ghBranch").value = cfg.branch;
+        if (cfg.token) document.getElementById("ghToken").value = cfg.token;
+      } catch (_) {}
+    }
+
+    function saveConfig() {
+      const cfg = {
+        owner: document.getElementById("ghOwner").value.trim(),
+        repo: document.getElementById("ghRepo").value.trim(),
+        file: document.getElementById("ghFile").value.trim() || "data.json",
+        branch: document.getElementById("ghBranch").value.trim() || "main",
+        token: document.getElementById("ghToken").value.trim()
+      };
+      localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+      setStatus("تم حفظ إعدادات الربط في المتصفح.", "#86efac");
+    }
+
+    function getConfig() {
+      return {
+        owner: document.getElementById("ghOwner").value.trim(),
+        repo: document.getElementById("ghRepo").value.trim(),
+        file: (document.getElementById("ghFile").value.trim() || "data.json").replace(/^\/+/, ""),
+        branch: document.getElementById("ghBranch").value.trim() || "main",
+        token: document.getElementById("ghToken").value.trim()
+      };
+    }
+
+    function setStatus(msg, color = "#e5e7eb") {
+      const el = document.getElementById("statusMsg");
+      el.style.color = color;
+      el.textContent = msg;
+    }
 
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
@@ -216,40 +332,47 @@
       if (btn) btn.classList.add("active");
     }
 
-    function addItem() {
+    function buildEntryFromForm() {
       const title = document.getElementById("title").value.trim();
       const category = document.getElementById("category").value;
       const promotion = document.getElementById("promotion").value.trim();
       const poster = document.getElementById("poster").value.trim();
       const streamUrl = document.getElementById("streamUrl").value.trim();
-      const toast = document.getElementById("toast");
 
       if (!title || !streamUrl) {
-        toast.style.color = "#fca5a5";
-        toast.textContent = "يرجى إدخال الاسم ورابط الفيديو على الأقل.";
-        return;
+        return { error: "يرجى إدخال الاسم ورابط الفيديو على الأقل." };
       }
 
-      const entry = {
-        id: Date.now(),
-        title,
-        category,
-        ...(category === "wrestling" ? { promotion: promotion || "General" } : {}),
-        poster,
-        url: streamUrl
+      return {
+        entry: {
+          id: Date.now(),
+          title,
+          category,
+          ...(category === "wrestling" ? { promotion: promotion || "General" } : {}),
+          poster,
+          url: streamUrl
+        }
       };
+    }
 
-      items.push(entry);
-      renderAll();
-
+    function clearFormInputs() {
       document.getElementById("title").value = "";
       document.getElementById("poster").value = "";
       document.getElementById("streamUrl").value = "";
       document.getElementById("promotion").value = "";
       document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+    }
 
-      toast.style.color = "#86efac";
-      toast.textContent = "تمت الإضافة إلى القائمة بنجاح.";
+    function addToLocalList() {
+      const res = buildEntryFromForm();
+      if (res.error) {
+        setStatus(res.error, "#fca5a5");
+        return;
+      }
+      items.push(res.entry);
+      renderAll();
+      clearFormInputs();
+      setStatus("تمت الإضافة إلى القائمة المؤقتة.", "#86efac");
     }
 
     function removeItem(index) {
@@ -278,21 +401,127 @@
       document.getElementById("jsonOutput").value = JSON.stringify(items, null, 2);
     }
 
+    function utf8ToBase64(str) {
+      const bytes = new TextEncoder().encode(str);
+      let bin = "";
+      for (let i = 0; i < bytes.length; i++) {
+        bin += String.fromCharCode(bytes[i]);
+      }
+      return btoa(bin);
+    }
+
+    function base64ToUtf8(b64) {
+      const clean = b64.replace(/\n/g, "");
+      const bin = atob(clean);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) {
+        bytes[i] = bin.charCodeAt(i);
+      }
+      return new TextDecoder().decode(bytes);
+    }
+
+    async function publishDirectly() {
+      const cfg = getConfig();
+      if (!cfg.owner || !cfg.repo || !cfg.token) {
+        setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً ثم اضغط حفظ إعدادات الربط.", "#fca5a5");
+        return;
+      }
+
+      // إذا المستخدم كتب عنصر بالحقول ولم يضغط إضافة مؤقتة، نأخذه تلقائياً
+      const formTitle = document.getElementById("title").value.trim();
+      const formUrl = document.getElementById("streamUrl").value.trim();
+      let newEntries = [...items];
+
+      if (formTitle || formUrl) {
+        const res = buildEntryFromForm();
+        if (res.error) {
+          setStatus(res.error, "#fca5a5");
+          return;
+        }
+        newEntries.push(res.entry);
+      }
+
+      if (newEntries.length === 0) {
+        setStatus("أضف عنصراً واحداً على الأقل قبل النشر.", "#fca5a5");
+        return;
+      }
+
+      const publishBtn = document.getElementById("publishBtn");
+      publishBtn.disabled = true;
+      setStatus("جاري النشر إلى GitHub...", "#93c5fd");
+
+      try {
+        const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
+        const headers = {
+          "Authorization": `Bearer ${cfg.token}`,
+          "Accept": "application/vnd.github+json",
+          "Content-Type": "application/json"
+        };
+
+        let existingData = [];
+        let existingSha = null;
+
+        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
+        if (getRes.status === 200) {
+          const fileJson = await getRes.json();
+          existingSha = fileJson.sha;
+          const decoded = base64ToUtf8(fileJson.content || "");
+          if (decoded.trim()) {
+            const parsed = JSON.parse(decoded);
+            if (Array.isArray(parsed)) {
+              existingData = parsed;
+            }
+          }
+        } else if (getRes.status !== 404) {
+          const errText = await getRes.text();
+          throw new Error(`تعذر قراءة الملف (${getRes.status}): ${errText}`);
+        }
+
+        const mergedData = [...existingData, ...newEntries];
+        const formattedJson = JSON.stringify(mergedData, null, 2) + "\n";
+
+        const putBody = {
+          message: `Add ${newEntries.map(x => x.title).join(", ")} via alawiTV dashboard`,
+          content: utf8ToBase64(formattedJson),
+          branch: cfg.branch,
+          ...(existingSha ? { sha: existingSha } : {})
+        };
+
+        const putRes = await fetch(apiUrl, {
+          method: "PUT",
+          headers,
+          body: JSON.stringify(putBody)
+        });
+
+        if (!putRes.ok) {
+          const errJson = await putRes.json().catch(() => ({}));
+          throw new Error(errJson.message || `فشل النشر (${putRes.status})`);
+        }
+
+        items.length = 0;
+        renderAll();
+        clearFormInputs();
+        document.getElementById("jsonOutput").value = JSON.stringify(mergedData, null, 2);
+        setStatus(`تم النشر بنجاح إلى ${cfg.file} على الفرع ${cfg.branch}!`, "#86efac");
+      } catch (err) {
+        setStatus(`خطأ أثناء النشر: ${err.message}`, "#fca5a5");
+      } finally {
+        publishBtn.disabled = false;
+      }
+    }
+
     function copyJson() {
       const box = document.getElementById("jsonOutput");
-      const toast = document.getElementById("toast");
       if (!box.value.trim()) {
-        toast.style.color = "#fca5a5";
-        toast.textContent = "لا يوجد كود JSON لنسخه بعد.";
+        setStatus("لا يوجد كود JSON لنسخه.", "#fca5a5");
         return;
       }
       box.select();
       navigator.clipboard?.writeText(box.value);
-      toast.style.color = "#86efac";
-      toast.textContent = "تم نسخ كود JSON إلى الحافظة.";
+      setStatus("تم نسخ كود JSON إلى الحافظة.", "#86efac");
     }
 
-    // عرض البيانات الأولية فور تحميل الصفحة
+    loadConfig();
     renderAll();
   </script>
 </body>
