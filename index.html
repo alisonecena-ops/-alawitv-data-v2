@@ -121,9 +121,21 @@
       cursor: pointer;
       margin-top: 10px;
     }
-    .btn-publish:disabled {
+    .btn-publish:disabled, .btn-save-link:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+    }
+    .btn-edit-links {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #3b4252;
+      border-radius: 8px;
+      background: #1f2430;
+      color: #f3f4f6;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
     }
     .btn-copy {
       width: 100%;
@@ -158,6 +170,7 @@
       color: #9ca3af;
       font-size: 12px;
       margin-top: 3px;
+      word-break: break-all;
     }
     .btn-del {
       background: #374151;
@@ -167,6 +180,67 @@
       padding: 6px 10px;
       cursor: pointer;
       font-size: 12px;
+    }
+    .links-manager {
+      margin-top: 14px;
+      background: #12151b;
+      border: 1px solid #292f3b;
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #323846;
+      background: #1b202b;
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .filter-btn.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .link-edit-card {
+      background: #181b22;
+      border: 1px solid #2a2f3a;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 10px;
+    }
+    .link-edit-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+    }
+    .btn-save-link {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 7px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-reload-links {
+      padding: 7px 12px;
+      border: 1px solid #3b4252;
+      border-radius: 7px;
+      background: #222733;
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+      margin-bottom: 10px;
     }
     textarea {
       min-height: 220px;
@@ -265,6 +339,26 @@
 
     <button type="button" class="btn-add" onclick="addToLocalList()">+ إضافة للقائمة المؤقتة</button>
     <button type="button" class="btn-publish" id="publishBtn" onclick="publishDirectly()">🚀 نشر مباشرة إلى GitHub</button>
+    <button type="button" class="btn-edit-links" onclick="toggleLinkManager()">🔧 تعديل روابط (أفلام ومسلسلات)</button>
+
+    <div class="links-manager hidden" id="linkManagerSection">
+      <h3>تعديل واستبدال روابط الأفلام والمسلسلات</h3>
+      <button type="button" class="btn-reload-links" onclick="loadRemoteLinksForEdit(true)">🔄 جلب أحدث الروابط من GitHub</button>
+
+      <div class="filter-row">
+        <button type="button" class="filter-btn active" id="filter-all" onclick="setLinkFilter('all', this)">الكل</button>
+        <button type="button" class="filter-btn" id="filter-movies" onclick="setLinkFilter('movies', this)">أفلام</button>
+        <button type="button" class="filter-btn" id="filter-series" onclick="setLinkFilter('series', this)">مسلسلات</button>
+      </div>
+
+      <div class="field">
+        <input id="linkSearchInput" type="text" placeholder="ابحث باسم الفيلم أو المسلسل..." oninput="renderEditableLinks()" />
+      </div>
+
+      <div id="editableLinksContainer">
+        <div class="item-meta">اضغط «تعديل روابط» أو «جلب أحدث الروابط من GitHub» لعرض العناصر.</div>
+      </div>
+    </div>
 
     <div class="status" id="statusMsg"></div>
 
@@ -277,6 +371,8 @@
   <script>
     const CONFIG_KEY = "alawitv_gh_publish_config_v1";
     const items = [];
+    let remoteVideosCache = [];
+    let currentLinkFilter = "all";
 
     function loadConfig() {
       try {
@@ -384,11 +480,17 @@
       renderAll();
       clearFormInputs();
       setStatus("تمت الإضافة إلى القائمة المؤقتة.", "#86efac");
+      if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
+        renderEditableLinks();
+      }
     }
 
     function removeItem(index) {
       items.splice(index, 1);
       renderAll();
+      if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
+        renderEditableLinks();
+      }
     }
 
     function renderAll() {
@@ -440,6 +542,220 @@
       return [];
     }
 
+    async function fetchRemoteVideosFile(cfg) {
+      const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
+      const headers = {
+        "Authorization": `Bearer ${cfg.token}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      };
+
+      const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
+      if (getRes.status === 200) {
+        const fileJson = await getRes.json();
+        let existingVideos = [];
+        const decoded = base64ToUtf8(fileJson.content || "");
+        if (decoded.trim()) {
+          const parsed = JSON.parse(decoded);
+          existingVideos = extractExistingVideos(parsed);
+        }
+        return { apiUrl, headers, videos: existingVideos, sha: fileJson.sha };
+      } else if (getRes.status === 404) {
+        return { apiUrl, headers, videos: [], sha: null };
+      } else {
+        const errText = await getRes.text();
+        throw new Error(`تعذر قراءة الملف (${getRes.status}): ${errText}`);
+      }
+    }
+
+    function toggleLinkManager() {
+      const box = document.getElementById("linkManagerSection");
+      const willOpen = box.classList.contains("hidden");
+      box.classList.toggle("hidden");
+      if (willOpen) {
+        renderEditableLinks();
+        const cfg = getConfig();
+        if (cfg.owner && cfg.repo && cfg.token && remoteVideosCache.length === 0) {
+          loadRemoteLinksForEdit(false);
+        }
+      }
+    }
+
+    function setLinkFilter(filterName, btn) {
+      currentLinkFilter = filterName;
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+      renderEditableLinks();
+    }
+
+    async function loadRemoteLinksForEdit(showMessage = true) {
+      const cfg = getConfig();
+      if (!cfg.owner || !cfg.repo || !cfg.token) {
+        if (showMessage) {
+          setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً لجلب الروابط من GitHub.", "#fca5a5");
+        }
+        renderEditableLinks();
+        return;
+      }
+
+      if (showMessage) {
+        setStatus("جاري جلب الروابط الحالية من GitHub...", "#93c5fd");
+      }
+
+      try {
+        const data = await fetchRemoteVideosFile(cfg);
+        remoteVideosCache = data.videos;
+        renderEditableLinks();
+        if (showMessage) {
+          setStatus(`تم جلب ${remoteVideosCache.length} عنصر من ${cfg.file}.`, "#86efac");
+        }
+      } catch (err) {
+        setStatus(`خطأ أثناء جلب الروابط: ${err.message}`, "#fca5a5");
+        renderEditableLinks();
+      }
+    }
+
+    function matchesCategoryFilter(category) {
+      const cat = String(category || "").trim();
+      if (currentLinkFilter === "movies") {
+        return cat === "أفلام" || cat.toLowerCase().includes("movie") || cat.toLowerCase().includes("film");
+      }
+      if (currentLinkFilter === "series") {
+        return cat === "مسلسلات" || cat.toLowerCase().includes("series") || cat.toLowerCase().includes("show");
+      }
+      return true;
+    }
+
+    function renderEditableLinks() {
+      const container = document.getElementById("editableLinksContainer");
+      const search = (document.getElementById("linkSearchInput")?.value || "").trim().toLowerCase();
+      container.innerHTML = "";
+
+      const combined = [
+        ...remoteVideosCache.map((v, idx) => ({ source: "remote", index: idx, item: v })),
+        ...items.map((v, idx) => ({ source: "local", index: idx, item: v }))
+      ].filter(entry => {
+        if (!matchesCategoryFilter(entry.item.category)) return false;
+        if (!search) return true;
+        const title = String(entry.item.title || "").toLowerCase();
+        const cat = String(entry.item.category || "").toLowerCase();
+        return title.includes(search) || cat.includes(search);
+      });
+
+      if (combined.length === 0) {
+        container.innerHTML = `<div class="item-meta">لا توجد أفلام أو مسلسلات مطابقة للفلتر أو البحث الحالي.</div>`;
+        return;
+      }
+
+      combined.forEach((entry, i) => {
+        const card = document.createElement("div");
+        card.className = "link-edit-card";
+        const srcLabel = entry.source === "remote" ? "منشور في GitHub" : "في القائمة المؤقتة";
+        const inputId = `edit-url-input-${i}`;
+
+        card.innerHTML = `
+          <div><strong>${entry.item.title || "بدون اسم"}</strong></div>
+          <div class="item-meta">القسم: ${entry.item.category || "غير محدد"} | ${srcLabel}</div>
+          <div class="link-edit-actions">
+            <input id="${inputId}" type="url" value="${escapeHtmlAttr(entry.item.videoUrl || "")}" placeholder="الصق الرابط الجديد هنا..." />
+            <button type="button" class="btn-save-link" id="save-btn-${i}">حفظ الرابط</button>
+          </div>
+        `;
+
+        container.appendChild(card);
+
+        document.getElementById(`save-btn-${i}`).addEventListener("click", () => {
+          const newUrl = document.getElementById(inputId).value.trim();
+          saveSingleLinkUpdate(entry.source, entry.index, newUrl, document.getElementById(`save-btn-${i}`));
+        });
+      });
+    }
+
+    function escapeHtmlAttr(val) {
+      return String(val)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    async function saveSingleLinkUpdate(source, index, newUrl, btnEl) {
+      if (!newUrl) {
+        setStatus("أدخل رابط الفيديو الجديد قبل الحفظ.", "#fca5a5");
+        return;
+      }
+
+      if (source === "local") {
+        if (items[index]) {
+          items[index].videoUrl = newUrl;
+          renderAll();
+          renderEditableLinks();
+          setStatus(`تم تحديث رابط «${items[index].title}» في القائمة المؤقتة.`, "#86efac");
+        }
+        return;
+      }
+
+      const cfg = getConfig();
+      if (!cfg.owner || !cfg.repo || !cfg.token) {
+        setStatus("أدخل اسم المستخدم، اسم المستودع، و GitHub Token أولاً لحفظ الرابط على GitHub.", "#fca5a5");
+        return;
+      }
+
+      if (btnEl) btnEl.disabled = true;
+      setStatus("جاري حفظ الرابط الجديد على GitHub...", "#93c5fd");
+
+      try {
+        const freshData = await fetchRemoteVideosFile(cfg);
+        const list = [...freshData.videos];
+        const targetTitle = remoteVideosCache[index]?.title || list[index]?.title || "";
+
+        let targetIdx = index;
+        if (targetTitle && (!list[targetIdx] || list[targetIdx].title !== targetTitle)) {
+          const found = list.findIndex(x => x.title === targetTitle);
+          if (found !== -1) targetIdx = found;
+        }
+
+        if (!list[targetIdx]) {
+          throw new Error("لم يتم العثور على العنصر في ملف البيانات.");
+        }
+
+        list[targetIdx] = {
+          ...list[targetIdx],
+          videoUrl: newUrl
+        };
+
+        const finalJsonObj = { videos: list };
+        const formattedJson = JSON.stringify(finalJsonObj, null, 2) + "\n";
+
+        const putBody = {
+          message: `Update video link for ${list[targetIdx].title || "item"} in videos.json`,
+          content: utf8ToBase64(formattedJson),
+          branch: cfg.branch,
+          ...(freshData.sha ? { sha: freshData.sha } : {})
+        };
+
+        const putRes = await fetch(freshData.apiUrl, {
+          method: "PUT",
+          headers: freshData.headers,
+          body: JSON.stringify(putBody)
+        });
+
+        if (!putRes.ok) {
+          const errJson = await putRes.json().catch(() => ({}));
+          throw new Error(errJson.message || `فشل حفظ الرابط (${putRes.status})`);
+        }
+
+        remoteVideosCache = list;
+        document.getElementById("jsonOutput").value = JSON.stringify(finalJsonObj, null, 2);
+        renderEditableLinks();
+        setStatus(`تم استبدال وحفظ رابط «${list[targetIdx].title}» بنجاح في ${cfg.file}!`, "#86efac");
+      } catch (err) {
+        setStatus(`خطأ أثناء حفظ الرابط: ${err.message}`, "#fca5a5");
+      } finally {
+        if (btnEl) btnEl.disabled = false;
+      }
+    }
+
     async function publishDirectly() {
       const cfg = getConfig();
       if (!cfg.owner || !cfg.repo || !cfg.token) {
@@ -470,29 +786,8 @@
       setStatus("جاري النشر إلى GitHub...", "#93c5fd");
 
       try {
-        const apiUrl = `https://api.github.com/repos/${encodeURIComponent(cfg.owner)}/${encodeURIComponent(cfg.repo)}/contents/${cfg.file}`;
-        const headers = {
-          "Authorization": `Bearer ${cfg.token}`,
-          "Accept": "application/vnd.github+json",
-          "Content-Type": "application/json"
-        };
-
-        let existingVideos = [];
-        let existingSha = null;
-
-        const getRes = await fetch(`${apiUrl}?ref=${encodeURIComponent(cfg.branch)}`, { headers });
-        if (getRes.status === 200) {
-          const fileJson = await getRes.json();
-          existingSha = fileJson.sha;
-          const decoded = base64ToUtf8(fileJson.content || "");
-          if (decoded.trim()) {
-            const parsed = JSON.parse(decoded);
-            existingVideos = extractExistingVideos(parsed);
-          }
-        } else if (getRes.status !== 404) {
-          const errText = await getRes.text();
-          throw new Error(`تعذر قراءة الملف (${getRes.status}): ${errText}`);
-        }
+        const data = await fetchRemoteVideosFile(cfg);
+        const existingVideos = data.videos;
 
         const finalJsonObj = {
           videos: [...existingVideos, ...newEntries]
@@ -503,12 +798,12 @@
           message: `Add ${newEntries.map(x => x.title).join(", ")} to videos.json`,
           content: utf8ToBase64(formattedJson),
           branch: cfg.branch,
-          ...(existingSha ? { sha: existingSha } : {})
+          ...(data.sha ? { sha: data.sha } : {})
         };
 
-        const putRes = await fetch(apiUrl, {
+        const putRes = await fetch(data.apiUrl, {
           method: "PUT",
-          headers,
+          headers: data.headers,
           body: JSON.stringify(putBody)
         });
 
@@ -517,10 +812,14 @@
           throw new Error(errJson.message || `فشل النشر (${putRes.status})`);
         }
 
+        remoteVideosCache = finalJsonObj.videos;
         items.length = 0;
         renderAll();
         clearFormInputs();
         document.getElementById("jsonOutput").value = JSON.stringify(finalJsonObj, null, 2);
+        if (!document.getElementById("linkManagerSection").classList.contains("hidden")) {
+          renderEditableLinks();
+        }
         setStatus(`تم النشر بنجاح إلى ${cfg.file} بنفس هيكل {"videos": [...]}!`, "#86efac");
       } catch (err) {
         setStatus(`خطأ أثناء النشر: ${err.message}`, "#fca5a5");
