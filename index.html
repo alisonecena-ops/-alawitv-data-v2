@@ -123,7 +123,7 @@
       font-size: 12px;
     }
     textarea {
-      min-height: 190px;
+      min-height: 220px;
       margin-top: 14px;
       direction: ltr;
       text-align: left;
@@ -187,7 +187,16 @@
   </div>
 
   <script>
-    const items = [];
+    const items = [
+      {
+        "id": 1795184428662,
+        "title": "AEW Dynamite",
+        "category": "wrestling",
+        "promotion": "AEW",
+        "poster": "https://share.google/6XTQR9LPwwS9bHjZq",
+        "url": "https://ok6-29.vkuser.net/expires/1795270689882/srcIp/151.244.152.195/pr/10/srcAg/CHROME_ANDROID/ch/-536166974/ms/95.142.206.33/type/3/sig/7sSE1jzCw0c/ct/8/urls/185.180.203.46%3B176.112.172.39/clientType/0/zs/65/id/20501661879033/video/"
+      }
+    ];
 
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
@@ -282,6 +291,9 @@
       toast.style.color = "#86efac";
       toast.textContent = "تم نسخ كود JSON إلى الحافظة.";
     }
+
+    // عرض البيانات الأولية فور تحميل الصفحة
+    renderAll();
   </script>
 </body>
 </html>
