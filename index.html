@@ -1,163 +1,287 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>لوحة تحكم علاوي TV</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>لوحة إضافة المحتوى - alawiTV</title>
   <style>
+    * { box-sizing: border-box; font-family: Tahoma, Arial, sans-serif; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background-color: #121212;
+      margin: 0;
+      padding: 16px;
+      background: #0f1115;
+      color: #f3f4f6;
+    }
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #181b22;
+      border: 1px solid #2a2f3a;
+      border-radius: 12px;
+      padding: 18px;
+    }
+    h2 {
+      margin: 0 0 16px;
+      font-size: 20px;
       color: #ffffff;
-      padding: 20px;
-      max-width: 500px;
-      margin: auto;
     }
-    h2 { text-align: center; color: #e50914; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input {
+    .field {
+      margin-bottom: 14px;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #d1d5db;
+    }
+    input, select, textarea {
       width: 100%;
-      padding: 12px;
+      padding: 11px 12px;
       border-radius: 8px;
-      border: 1px solid #333;
-      background: #1e1e1e;
-      color: #fff;
-      box-sizing: border-box;
-      font-size: 15px;
+      border: 1px solid #323846;
+      background: #111318;
+      color: #ffffff;
+      font-size: 14px;
     }
-    button {
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #ef4444;
+    }
+    .quick-tags {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .tag-btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #3b4252;
+      background: #222733;
+      color: #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .tag-btn.active {
+      background: #ef4444;
+      border-color: #ef4444;
+      color: #fff;
+    }
+    .btn-add {
       width: 100%;
       padding: 12px;
       border: none;
       border-radius: 8px;
-      font-size: 16px;
+      background: #dc2626;
+      color: #fff;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-copy {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #16a34a;
+      color: #fff;
+      font-size: 15px;
       font-weight: bold;
       cursor: pointer;
       margin-top: 10px;
     }
-    .btn-add { background-color: #e50914; color: white; }
-    .btn-copy { background-color: #28a745; color: white; }
-    .item {
-      background: #1e1e1e;
-      padding: 10px 15px;
-      border-radius: 8px;
-      margin-top: 10px;
+    .items-list {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .item-card {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border: 1px solid #333;
-    }
-    .btn-del {
-      background: #dc3545;
-      color: white;
-      width: auto;
-      padding: 6px 12px;
-      margin: 0;
+      gap: 10px;
+      background: #12151b;
+      border: 1px solid #292f3b;
+      padding: 10px 12px;
+      border-radius: 8px;
       font-size: 13px;
     }
+    .item-meta {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+    .btn-del {
+      background: #374151;
+      color: #fca5a5;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 12px;
+    }
     textarea {
-      width: 100%;
-      height: 180px;
-      margin-top: 15px;
-      background: #0d0d0d;
-      color: #00ff88;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 10px;
-      box-sizing: border-box;
+      min-height: 190px;
+      margin-top: 14px;
       direction: ltr;
+      text-align: left;
       font-family: monospace;
+      font-size: 12px;
+    }
+    .hidden { display: none; }
+    .toast {
+      margin-top: 8px;
+      font-size: 13px;
+      color: #86efac;
+      min-height: 18px;
     }
   </style>
 </head>
 <body>
+  <div class="container">
+    <h2>إضافة محتوى جديد (alawiTV)</h2>
 
-  <h2>🎬 لوحة تحكم علاوي TV</h2>
+    <div class="field">
+      <label for="title">الاسم (فيلم، مسلسل، قناة، أو عرض مصارعة):</label>
+      <input id="title" type="text" placeholder="مثال: WWE RAW أو Spider-Man" />
+    </div>
 
-  <div class="form-group">
-    <label>اسم الفيلم أو القناة:</label>
-    <input type="text" id="title" placeholder="مثال: Spider-Man">
+    <div class="field">
+      <label for="category">نوع المحتوى:</label>
+      <select id="category" onchange="handleCategoryChange()">
+        <option value="movie">فيلم</option>
+        <option value="series">مسلسل</option>
+        <option value="channel">قناة</option>
+        <option value="wrestling">مصارعة</option>
+      </select>
+    </div>
+
+    <div class="field hidden" id="wrestlingSection">
+      <label for="promotion">قسم المصارعة (WWE / AEW):</label>
+      <input id="promotion" type="text" placeholder="مثال: WWE أو AEW" />
+      <div class="quick-tags">
+        <button type="button" class="tag-btn" onclick="setPromotion('WWE', this)">WWE</button>
+        <button type="button" class="tag-btn" onclick="setPromotion('AEW', this)">AEW</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="poster">رابط الصورة (اختياري):</label>
+      <input id="poster" type="url" placeholder="https://upload.wikimedia.org/wikipedia/en/6/6a/RAW_Netflix_debut_poster.jpg" />
+    </div>
+
+    <div class="field">
+      <label for="streamUrl">رابط الفيديو (.mp4 أو .m3u8):</label>
+      <input id="streamUrl" type="url" placeholder="https://..." />
+    </div>
+
+    <button type="button" class="btn-add" onclick="addItem()">+ إضافة للقائمة</button>
+
+    <div class="items-list" id="itemsList"></div>
+
+    <textarea id="jsonOutput" placeholder="هنا سيظهر كود JSON..."></textarea>
+    <button type="button" class="btn-copy" onclick="copyJson()">📋 نسخ الكود للـ GitHub</button>
+    <div class="toast" id="toast"></div>
   </div>
-
-  <div class="form-group">
-    <label>رابط الصورة (اختياري):</label>
-    <input type="url" id="thumbnailUrl" placeholder="https://example.com/image.jpg">
-  </div>
-
-  <div class="form-group">
-    <label>رابط الفيديو (.m3u8 أو .mp4):</label>
-    <input type="url" id="videoUrl" placeholder="https://...">
-  </div>
-
-  <button class="btn-add" onclick="addVideo()">➕ إضافة للقائمة</button>
-
-  <div id="videoList"></div>
-
-  <textarea id="jsonOutput" readonly placeholder="سيظهر كود JSON هنا..."></textarea>
-  <button class="btn-copy" onclick="copyJson()">📋 نسخ الكود للـ GitHub</button>
 
   <script>
-    let videos = [];
+    const items = [];
 
-    function addVideo() {
-      const title = document.getElementById('title').value.trim();
-      const thumbnailUrl = document.getElementById('thumbnailUrl').value.trim();
-      const videoUrl = document.getElementById('videoUrl').value.trim();
+    function handleCategoryChange() {
+      const cat = document.getElementById("category").value;
+      const section = document.getElementById("wrestlingSection");
+      if (cat === "wrestling") {
+        section.classList.remove("hidden");
+      } else {
+        section.classList.add("hidden");
+        document.getElementById("promotion").value = "";
+        document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+      }
+    }
 
-      if (!title || !videoUrl) {
-        alert("يرجى إدخال اسم الفيلم ورابط الفيديو على الأقل!");
+    function setPromotion(name, btn) {
+      document.getElementById("promotion").value = name;
+      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+      if (btn) btn.classList.add("active");
+    }
+
+    function addItem() {
+      const title = document.getElementById("title").value.trim();
+      const category = document.getElementById("category").value;
+      const promotion = document.getElementById("promotion").value.trim();
+      const poster = document.getElementById("poster").value.trim();
+      const streamUrl = document.getElementById("streamUrl").value.trim();
+      const toast = document.getElementById("toast");
+
+      if (!title || !streamUrl) {
+        toast.style.color = "#fca5a5";
+        toast.textContent = "يرجى إدخال الاسم ورابط الفيديو على الأقل.";
         return;
       }
 
-      videos.push({
-        id: String(videos.length + 1),
-        title: title,
-        description: "مشاهدة ممتعة عبر علاوي TV",
-        videoUrl: videoUrl,
-        thumbnailUrl: thumbnailUrl,
-        category: "أفلام"
-      });
+      const entry = {
+        id: Date.now(),
+        title,
+        category,
+        ...(category === "wrestling" ? { promotion: promotion || "General" } : {}),
+        poster,
+        url: streamUrl
+      };
 
-      document.getElementById('title').value = '';
-      document.getElementById('thumbnailUrl').value = '';
-      document.getElementById('videoUrl').value = '';
+      items.push(entry);
+      renderAll();
 
-      updateUI();
+      document.getElementById("title").value = "";
+      document.getElementById("poster").value = "";
+      document.getElementById("streamUrl").value = "";
+      document.getElementById("promotion").value = "";
+      document.querySelectorAll(".tag-btn").forEach(b => b.classList.remove("active"));
+
+      toast.style.color = "#86efac";
+      toast.textContent = "تمت الإضافة إلى القائمة بنجاح.";
     }
 
-    function removeVideo(index) {
-      videos.splice(index, 1);
-      // إعادة ترقيم الـ id تلقائياً
-      videos.forEach((v, i) => v.id = String(i + 1));
-      updateUI();
+    function removeItem(index) {
+      items.splice(index, 1);
+      renderAll();
     }
 
-    function updateUI() {
-      const list = document.getElementById('videoList');
-      list.innerHTML = '';
+    function renderAll() {
+      const listEl = document.getElementById("itemsList");
+      listEl.innerHTML = "";
 
-      videos.forEach((v, index) => {
-        list.innerHTML += `
-          <div class="item">
-            <span>${v.id}. ${v.title}</span>
-            <button class="btn-del" onclick="removeVideo(${index})">حذف</button>
+      items.forEach((item, idx) => {
+        const promoText = item.category === "wrestling" ? ` | القسم: ${item.promotion}` : "";
+        const card = document.createElement("div");
+        card.className = "item-card";
+        card.innerHTML = `
+          <div>
+            <strong>${item.title}</strong>
+            <div class="item-meta">النوع: ${item.category}${promoText}</div>
           </div>
+          <button type="button" class="btn-del" onclick="removeItem(${idx})">حذف</button>
         `;
+        listEl.appendChild(card);
       });
 
-      const finalJson = JSON.stringify({ videos: videos }, null, 2);
-      document.getElementById('jsonOutput').value = finalJson;
+      document.getElementById("jsonOutput").value = JSON.stringify(items, null, 2);
     }
 
     function copyJson() {
-      const output = document.getElementById('jsonOutput');
-      if (!output.value) return;
-      output.select();
-      document.execCommand('copy');
-      alert("تم نسخ الكود بنجاح! الصقه الآن في ملف videos.json على GitHub.");
+      const box = document.getElementById("jsonOutput");
+      const toast = document.getElementById("toast");
+      if (!box.value.trim()) {
+        toast.style.color = "#fca5a5";
+        toast.textContent = "لا يوجد كود JSON لنسخه بعد.";
+        return;
+      }
+      box.select();
+      navigator.clipboard?.writeText(box.value);
+      toast.style.color = "#86efac";
+      toast.textContent = "تم نسخ كود JSON إلى الحافظة.";
     }
   </script>
-
 </body>
 </html>
