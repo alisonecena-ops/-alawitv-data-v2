@@ -87,6 +87,22 @@
       "videoUrl": "https://c9lxdsdfdddsdsddsf.1vid.online/hls2/02/00018/yqu08c6dtjky_n/index-v1-a1.m3u8?t=z-rXreA5BxHshmlibPKnd2Tb_nTj0R6UUaNfmqwGVWk&s=1795261639&e=7200&f=90793&i=0.0&sp=2048",
       "thumbnailUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBnFjinyquebdwvblIfv1tzY4LqtXg3gOkL2MVtLFJEQ&s=10",
       "category": "أفلام"
+    },
+    {
+      "id": "1795262615463_449",
+      "title": "DEXTER1",
+      "description": "ديكستر موسم الاول مؤقت",
+      "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4",
+      "thumbnailUrl": "",
+      "category": "مسلسلات",
+      "episodes": [
+        {
+          "number": 1,
+          "title": "الحلقة 1",
+          "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4"
+        }
+      ],
+      "episodesCount": 10
     }
   ]
 }
