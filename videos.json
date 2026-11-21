@@ -101,9 +101,27 @@
           "title": "الحلقة 1",
           "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4",
           "sourceUrl": "https://ww1.goojara.to/ejPmr7"
+        },
+        {
+          "number": 2,
+          "title": "الحلقة 2",
+          "videoUrl": "https://gxd.jabroni.mov/6014f03a6c20968b5f9041a1769d00e25ddd2aa8.mp4?md5=gi2hce1v6zOWYIU8wv_-rQ&expires=1795277859&fn=6014f03a6c20968b5f9041a1769d00e25ddd2aa8.mp4",
+          "sourceUrl": "https://ww1.goojara.to/ejPmr7"
+        },
+        {
+          "number": 3,
+          "title": "الحلقة 3",
+          "videoUrl": "https://agra.nebula.to/6194ee0c7112f5cbcd085e9d27a5faa08993269a.mp4?md5=gUjfmXmn1lEk0wuPWua--Q&expires=1795277904&fn=6194ee0c7112f5cbcd085e9d27a5faa08993269a.mp4",
+          "sourceUrl": "https://ww1.goojara.to/ejPmr7"
+        },
+        {
+          "number": 4,
+          "title": "الحلقة 4",
+          "videoUrl": "https://web.wootly.ch/source?id=52feba3b50df7368c4a32da3550ab2035f2ea592&sig=tbLlvDp60WIXPqp28yptfQ&expire=1795270727&ofs=11&usr=160012",
+          "sourceUrl": "https://ww1.goojara.to/ejPmr7"
         }
       ],
-      "episodesCount": 1,
+      "episodesCount": 4,
       "sourceUrl": "https://ww1.goojara.to/ejPmr7"
     }
   ]
