@@ -93,16 +93,18 @@
       "title": "DEXTER1",
       "description": "ديكستر موسم الاول مؤقت",
       "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4",
-      "thumbnailUrl": "",
+      "thumbnailUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS_css7xIx9RX7z8V-EIsqA5QY8ohTq4vTKiasqjVLXlg&s=10",
       "category": "مسلسلات",
       "episodes": [
         {
           "number": 1,
           "title": "الحلقة 1",
-          "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4"
+          "videoUrl": "https://egh.jabroni.mov/4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4?md5=ODS09HbsHbJOPIqSXHaDkw&expires=1795276736&fn=4ed7a336e71a8bc7edd6d2b01f96117b7e085e55.mp4",
+          "sourceUrl": "https://ww1.goojara.to/ejPmr7"
         }
       ],
-      "episodesCount": 10
+      "episodesCount": 1,
+      "sourceUrl": "https://ww1.goojara.to/ejPmr7"
     }
   ]
 }
