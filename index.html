@@ -18,7 +18,7 @@
       min-height: 100vh;
     }
     .app-shell {
-      max-width: 760px;
+      max-width: 780px;
       margin: 0 auto;
     }
     .top-banner {
@@ -76,8 +76,13 @@
       grid-template-columns: 1fr 1fr;
       gap: 10px;
     }
-    @media (max-width: 560px) {
-      .grid-2 {
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    @media (max-width: 620px) {
+      .grid-2, .grid-3 {
         grid-template-columns: 1fr;
       }
       body {
@@ -116,6 +121,43 @@
       font-size: 11px;
       color: #9ca3af;
       margin-top: 4px;
+    }
+    .quality-box {
+      background: #0c1018;
+      border: 1px solid #253047;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 11px;
+    }
+    .quality-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .quality-title {
+      font-size: 12.5px;
+      font-weight: bold;
+      color: #fbbf24;
+    }
+    .q-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: bold;
+      background: #1e293b;
+      color: #cbd5e1;
+      border: 1px solid #334155;
+      margin-left: 4px;
+      margin-top: 4px;
+    }
+    .q-badge.has-link {
+      background: #052e16;
+      color: #86efac;
+      border-color: #166534;
     }
     .quick-tags {
       display: flex;
@@ -391,7 +433,7 @@
   <div class="app-shell">
     <div class="top-banner">
       <h1>لوحة تحكم alawiTV - علاوي TV</h1>
-      <p>ملف البيانات: https://raw.githubusercontent.com/alisonecena-ops/-alawitv-data-v2/main/videos.json</p>
+      <p id="bannerUrl">ملف البيانات: https://raw.githubusercontent.com/alisonecena-ops/-alawitv-data-v2/main/videos.json</p>
     </div>
 
     <!-- 1. إعدادات GitHub -->
@@ -400,21 +442,21 @@
       <div class="grid-2">
         <div class="field">
           <label for="ghOwner">Owner:</label>
-          <input id="ghOwner" type="text" value="alisonecena-ops" />
+          <input id="ghOwner" type="text" value="alisonecena-ops" oninput="updateBannerUrl()" />
         </div>
         <div class="field">
           <label for="ghRepo">Repository:</label>
-          <input id="ghRepo" type="text" value="-alawitv-data-v2" />
+          <input id="ghRepo" type="text" value="-alawitv-data-v2" oninput="updateBannerUrl()" />
         </div>
       </div>
       <div class="grid-2">
         <div class="field">
           <label for="ghFile">File:</label>
-          <input id="ghFile" type="text" value="videos.json" />
+          <input id="ghFile" type="text" value="videos.json" oninput="updateBannerUrl()" />
         </div>
         <div class="field">
           <label for="ghBranch">Branch:</label>
-          <input id="ghBranch" type="text" value="main" />
+          <input id="ghBranch" type="text" value="main" oninput="updateBannerUrl()" />
         </div>
       </div>
       <div class="field">
@@ -486,8 +528,30 @@
       </div>
 
       <div class="field" id="videoUrlField">
-        <label for="videoUrl" id="videoUrlLabel">رابط الفيديو:</label>
+        <label for="videoUrl" id="videoUrlLabel">رابط الفيديو (الأساسي):</label>
         <input id="videoUrl" type="url" placeholder="https://..." />
+      </div>
+
+      <div class="quality-box">
+        <div class="quality-header">
+          <span class="quality-title">روابط الجودات (1080 / 720 / 480)</span>
+          <button type="button" class="btn-mini btn-gray" onclick="autoFillQualitiesFromMain('q1080', 'q720', 'q480', 'videoUrl')">تعبئة الجودات من الرابط الأساسي</button>
+        </div>
+        <div class="grid-3">
+          <div>
+            <label for="q1080">جودة 1080:</label>
+            <input id="q1080" type="url" placeholder="رابط 1080..." />
+          </div>
+          <div>
+            <label for="q720">جودة 720:</label>
+            <input id="q720" type="url" placeholder="رابط 720..." />
+          </div>
+          <div>
+            <label for="q480">جودة 480:</label>
+            <input id="q480" type="url" placeholder="رابط 480..." />
+          </div>
+        </div>
+        <div class="hint">إذا تركت جودة فارغة، سيعتمد التطبيق على الرابط الأساسي أو أقرب جودة متوفرة.</div>
       </div>
 
       <div class="field">
@@ -514,11 +578,14 @@
       <div class="list" id="tempList"></div>
     </section>
 
-    <!-- 4. المحتوى المنشور وتعديل الروابط والحذف -->
+    <!-- 4. المحتوى المنشور وتعديل الروابط والجودات والحذف -->
     <section class="card">
       <div class="card-title-row">
         <h2>المحتوى المنشور والمواسم والحلقات <span class="badge" id="publishedBadge">0</span></h2>
-        <button type="button" class="btn btn-gray btn-inline" id="refreshBtn" onclick="loadPublishedContent(true)">🔄 تحديث من GitHub</button>
+        <div class="entry-actions-right">
+          <button type="button" class="btn btn-danger-soft btn-inline" onclick="clearPendingUpdates()">إلغاء التعديلات المعلقة</button>
+          <button type="button" class="btn btn-gray btn-inline" id="refreshBtn" onclick="loadPublishedContent(true)">🔄 تحديث من GitHub</button>
+        </div>
       </div>
 
       <div class="filter-bar">
@@ -537,14 +604,21 @@
       <button type="button" class="btn btn-sky" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
         💾 نشر تعديلات وحذف المنشور (<span id="pendingLinksBadge">0</span> معلقة)
       </button>
-      <div class="hint">تعديلات المسلسلات والمواسم والحلقات والترجمة والروابط وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة.</div>
+      <div class="hint">تعديلات المسلسلات والمواسم والحلقات والجودات (1080/720/480) والترجمة والروابط وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة.</div>
 
       <div class="list" id="publishedList"></div>
     </section>
 
-    <!-- 5. معاينة JSON -->
+    <!-- 5. معاينة JSON ونسخ احتياطي -->
     <section class="card">
-      <h2>معاينة JSON</h2>
+      <div class="card-title-row">
+        <h2>معاينة JSON والنسخ الاحتياطي</h2>
+        <div class="entry-actions-right">
+          <button type="button" class="btn-mini btn-blue" onclick="downloadJsonBackup()">⬇ تحميل نسخة JSON</button>
+          <button type="button" class="btn-mini btn-amber" onclick="document.getElementById('importJsonFile').click()">⬆ استيراد JSON</button>
+          <input type="file" id="importJsonFile" accept=".json,application/json" class="hidden" onchange="importJsonBackup(event)" />
+        </div>
+      </div>
       <textarea id="jsonBox" placeholder="سيظهر هنا كود JSON..."></textarea>
       <button type="button" class="btn btn-green" onclick="copyJson()">📋 نسخ كود JSON</button>
     </section>
@@ -588,6 +662,54 @@
         return "http://" + cleaned.substring(httpIdx + 7).trim();
       }
       return cleaned;
+    }
+
+    function normalizeQualities(rawQ, fallbackUrl = "") {
+      const obj = (rawQ && typeof rawQ === "object") ? rawQ : {};
+      const base = cleanUrlValue(fallbackUrl || "");
+      const q1080 = cleanUrlValue(obj["1080"] || obj.q1080 || obj.high || "");
+      const q720 = cleanUrlValue(obj["720"] || obj.q720 || obj.medium || "");
+      const q480 = cleanUrlValue(obj["480"] || obj.q480 || obj.low || "");
+      const result = {};
+      if (q1080 || base) result["1080"] = q1080 || base;
+      if (q720 || q1080 || base) result["720"] = q720 || q1080 || base;
+      if (q480 || q720 || q1080 || base) result["480"] = q480 || q720 || q1080 || base;
+      return result;
+    }
+
+    function extractExplicitQualities(rawQ) {
+      const obj = (rawQ && typeof rawQ === "object") ? rawQ : {};
+      return {
+        "1080": cleanUrlValue(obj["1080"] || obj.q1080 || ""),
+        "720": cleanUrlValue(obj["720"] || obj.q720 || ""),
+        "480": cleanUrlValue(obj["480"] || obj.q480 || "")
+      };
+    }
+
+    function autoFillQualitiesFromMain(id1080, id720, id480, mainInputId) {
+      const mainVal = cleanUrlValue(document.getElementById(mainInputId)?.value || "");
+      if (!mainVal) {
+        setStatus("أدخل الرابط الأساسي أولاً لتعبئة الجودات تلقائياً.", "error");
+        return;
+      }
+      const e1080 = document.getElementById(id1080);
+      const e720 = document.getElementById(id720);
+      const e480 = document.getElementById(id480);
+      if (e1080 && !e1080.value.trim()) e1080.value = mainVal;
+      if (e720 && !e720.value.trim()) e720.value = mainVal;
+      if (e480 && !e480.value.trim()) e480.value = mainVal;
+      setStatus("تمت تعبئة حقول الجودات (1080 / 720 / 480) من الرابط الأساسي.", "success");
+    }
+
+    function updateBannerUrl() {
+      const owner = (document.getElementById("ghOwner")?.value || "").trim() || "alisonecena-ops";
+      const repo = (document.getElementById("ghRepo")?.value || "").trim() || "-alawitv-data-v2";
+      const file = ((document.getElementById("ghFile")?.value || "").trim() || "videos.json").replace(/^\/+/, "");
+      const branch = (document.getElementById("ghBranch")?.value || "").trim() || "main";
+      const banner = document.getElementById("bannerUrl");
+      if (banner) {
+        banner.textContent = `ملف البيانات: https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file}`;
+      }
     }
 
     function setStatus(msg, level = "normal") {
@@ -650,6 +772,7 @@
         }
       } catch (_) {}
       document.getElementById("ghToken").value = sessionToken || "";
+      updateBannerUrl();
     }
 
     function saveConfig() {
@@ -665,6 +788,7 @@
       document.getElementById("ghFile").value = cfg.file;
       document.getElementById("ghBranch").value = cfg.branch;
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(cfg));
+      updateBannerUrl();
       setStatus("تم حفظ إعدادات GitHub محلياً (التوكن يبقى في الجلسة فقط ولا يُحفظ في localStorage).", "success");
     }
 
@@ -720,6 +844,21 @@
       localStorage.setItem(PUBLISHED_CACHE_KEY, JSON.stringify(publishedItems));
     }
 
+    function clearPendingUpdates() {
+      if (Object.keys(pendingLinkUpdates).length === 0) {
+        setStatus("لا توجد تعديلات معلقة لإلغائها.", "info");
+        return;
+      }
+      pendingLinkUpdates = {};
+      draftEpisodesMap = {};
+      editingKey = null;
+      activeEpisodeEditor = {};
+      savePendingLinks();
+      renderPublishedList();
+      updateJsonPreview();
+      setStatus("تم إلغاء جميع التعديلات وطلبات الحذف المعلقة.", "info");
+    }
+
     function isSeriesCategory(cat) {
       const c = String(cat || "").trim().toLowerCase();
       return c.includes("مسلسل") || c.includes("series");
@@ -741,6 +880,21 @@
       return cleanUrlValue(item.subtitleUrl || item.subUrl || "");
     }
 
+    function getItemQualities(item, pending, fallbackUrl = "") {
+      if (pending && pending.editQualities) {
+        return extractExplicitQualities(pending.editQualities);
+      }
+      if (item && item.qualities) {
+        return extractExplicitQualities(item.qualities);
+      }
+      const cleanBase = cleanUrlValue(fallbackUrl || (item ? item.videoUrl : "") || "");
+      return {
+        "1080": cleanBase,
+        "720": cleanBase,
+        "480": cleanBase
+      };
+    }
+
     function normalizeEpisodesList(item, pending) {
       const fallbackSource = getItemSource(item, pending);
       const fallbackSub = getItemSubtitle(item, pending);
@@ -750,11 +904,13 @@
         return pending.editEpisodes.map((ep, i) => {
           const epNum = Number(ep.number) || (i + 1);
           const epSeason = Number(ep.season) || fallbackSeason;
+          const epUrl = cleanUrlValue(ep.videoUrl || "");
           return {
             number: epNum,
             season: epSeason,
             title: String(ep.title || `الحلقة ${epNum}`),
-            videoUrl: cleanUrlValue(ep.videoUrl || ""),
+            videoUrl: epUrl,
+            qualities: normalizeQualities(ep.qualities, epUrl),
             sourceUrl: String(ep.sourceUrl || ep.source || fallbackSource || "").trim(),
             subtitleUrl: cleanUrlValue(ep.subtitleUrl || ep.subUrl || fallbackSub || "")
           };
@@ -764,22 +920,26 @@
         return item.episodes.map((ep, i) => {
           const epNum = Number(ep.number) || (i + 1);
           const epSeason = Number(ep.season || ep.seasonNumber) || fallbackSeason;
+          const epUrl = cleanUrlValue(ep.videoUrl || ep.url || "");
           return {
             number: epNum,
             season: epSeason,
             title: String(ep.title || `الحلقة ${epNum}`),
-            videoUrl: cleanUrlValue(ep.videoUrl || ep.url || ""),
+            videoUrl: epUrl,
+            qualities: normalizeQualities(ep.qualities, epUrl),
             sourceUrl: String(ep.sourceUrl || ep.source || fallbackSource || "").trim(),
             subtitleUrl: cleanUrlValue(ep.subtitleUrl || ep.subUrl || fallbackSub || "")
           };
         });
       }
       if (item && cleanUrlValue(item.videoUrl || "") !== "") {
+        const baseUrl = cleanUrlValue(item.videoUrl || "");
         return [{
           number: 1,
           season: fallbackSeason,
           title: "الحلقة 1",
-          videoUrl: cleanUrlValue(item.videoUrl || ""),
+          videoUrl: baseUrl,
+          qualities: normalizeQualities(item.qualities, baseUrl),
           sourceUrl: fallbackSource,
           subtitleUrl: fallbackSub
         }];
@@ -804,7 +964,7 @@
         seriesExtraBox.classList.add("hidden");
         epBox.classList.add("hidden");
         document.getElementById("episodesCount").value = "";
-        urlLabel.textContent = "رابط الفيديو:";
+        urlLabel.textContent = "رابط الفيديو (الأساسي):";
         urlInput.placeholder = "https://...";
       }
 
@@ -839,7 +999,10 @@
       const epNumRaw = parseInt(document.getElementById("episodeNumberInput")?.value || "", 10);
       const episodesRaw = document.getElementById("episodesCount").value.trim();
       const thumbnailUrl = cleanUrlValue(document.getElementById("thumbnailUrl").value);
-      const videoUrl = cleanUrlValue(document.getElementById("videoUrl").value);
+      const q1080 = cleanUrlValue(document.getElementById("q1080")?.value || "");
+      const q720 = cleanUrlValue(document.getElementById("q720")?.value || "");
+      const q480 = cleanUrlValue(document.getElementById("q480")?.value || "");
+      const videoUrl = cleanUrlValue(document.getElementById("videoUrl").value) || q1080 || q720 || q480;
       const subtitleUrl = cleanUrlValue(document.getElementById("subtitleUrl").value);
       const sourceUrl = document.getElementById("sourceLocation").value.trim();
 
@@ -849,13 +1012,19 @@
         return { error: "يرجى إدخال الاسم." };
       }
       if (!seriesMode && !videoUrl) {
-        return { error: "يرجى إدخال رابط الفيديو." };
+        return { error: "يرجى إدخال رابط الفيديو أو رابط جودة واحدة على الأقل." };
       }
 
       let finalCategory = catVal;
       if (promoVal === "WWE" || promoVal === "AEW") {
         finalCategory = `مصارعة ${promoVal}`;
       }
+
+      const explicitQualities = {
+        "1080": q1080 || videoUrl,
+        "720": q720 || q1080 || videoUrl,
+        "480": q480 || q720 || q1080 || videoUrl
+      };
 
       const entry = {
         id: String(Date.now()) + "_" + Math.floor(Math.random() * 1000),
@@ -866,6 +1035,10 @@
         category: finalCategory,
         sourceUrl
       };
+
+      if (videoUrl) {
+        entry.qualities = explicitQualities;
+      }
 
       if (subtitleUrl) {
         entry.subtitleUrl = subtitleUrl;
@@ -881,6 +1054,7 @@
             season: seasonVal,
             title: `الحلقة ${chosenEpNum}`,
             videoUrl,
+            qualities: explicitQualities,
             sourceUrl,
             subtitleUrl
           });
@@ -903,6 +1077,9 @@
       document.getElementById("description").value = "";
       document.getElementById("thumbnailUrl").value = "";
       document.getElementById("videoUrl").value = "";
+      if (document.getElementById("q1080")) document.getElementById("q1080").value = "";
+      if (document.getElementById("q720")) document.getElementById("q720").value = "";
+      if (document.getElementById("q480")) document.getElementById("q480").value = "";
       document.getElementById("subtitleUrl").value = "";
       document.getElementById("sourceLocation").value = "";
       document.getElementById("episodesCount").value = "";
@@ -956,6 +1133,15 @@
         .replace(/"/g, "&quot;");
     }
 
+    function renderQualityBadges(qObj) {
+      const q = extractExplicitQualities(qObj);
+      const list = ["1080", "720", "480"];
+      return `<div style="margin-top:4px;">` + list.map(code => {
+        const ok = Boolean(q[code]);
+        return `<span class="q-badge ${ok ? "has-link" : ""}">${code}p: ${ok ? "متوفر" : "افتراضي"}</span>`;
+      }).join("") + `</div>`;
+    }
+
     function renderSourceBlock(sourceText, label = "مكان جبتة") {
       if (!sourceText) {
         return `<div class="entry-meta">${esc(label)}: غير محدد</div>`;
@@ -996,6 +1182,7 @@
               <div class="entry-title">${esc(item.title)}</div>
               <div class="entry-meta">التصنيف: ${esc(item.category)}${seasonInfo}</div>
               ${item.videoUrl ? `<div class="entry-meta">الرابط: ${esc(item.videoUrl)}</div>` : ""}
+              ${item.qualities ? renderQualityBadges(item.qualities) : ""}
               ${sub ? `<div class="entry-meta">الترجمة العربية: ${esc(sub)}</div>` : ""}
               ${renderSourceBlock(src, "مكان جبتة")}
             </div>
@@ -1099,6 +1286,7 @@
         const displayUrl = (pending && pending.newVideoUrl)
           ? pending.newVideoUrl
           : (seriesItem ? (episodesList[0]?.videoUrl || item.videoUrl || "") : (item.videoUrl || ""));
+        const displayQualities = getItemQualities(item, pending, displayUrl);
 
         const seasonsDistinct = seriesItem
           ? [...new Set(episodesList.map(e => Number(e.season) || 1))]
@@ -1121,16 +1309,20 @@
                 const epSub = cleanUrlValue(ep.subtitleUrl || ep.subUrl || displaySubtitle || "");
                 const epSeason = Number(ep.season) || 1;
                 const epNum = Number(ep.number) || (epIdx + 1);
+                const epQ = extractExplicitQualities(ep.qualities);
                 const encodedEpSrc = encodeURIComponent(epSrc);
+                const encodedEpUrl = encodeURIComponent(ep.videoUrl || "");
                 return `
                   <div class="ep-row">
                     <div>
                       <div class="ep-row-title">الموسم ${epSeason} • ${esc(ep.title || `الحلقة ${epNum}`)}</div>
                       <div class="ep-row-url">${esc(ep.videoUrl || "بدون رابط")}</div>
+                      ${renderQualityBadges(ep.qualities)}
                       ${epSub ? `<div class="ep-row-url">ترجمة عربية: ${esc(epSub)}</div>` : ""}
                       <div class="ep-row-source">مكان جبتة: ${esc(epSrc || "غير محدد")}</div>
                     </div>
                     <div class="entry-actions-right">
+                      ${ep.videoUrl ? `<button type="button" class="btn-mini btn-gray" onclick="copyTextToClipboard(decodeURIComponent('${encodedEpUrl}'), 'رابط الحلقة')">نسخ الرابط</button>` : ""}
                       ${epSrc ? `<button type="button" class="btn-mini btn-blue" onclick="copyTextToClipboard(decodeURIComponent('${encodedEpSrc}'), 'مكان الحلقة')">📋 نسخ المكان</button>` : ""}
                       <button type="button" class="btn-mini btn-amber" onclick="openEpisodeEditor('${key}', 'edit', ${epIdx})">تعديل الحلقة</button>
                       <button type="button" class="btn-mini btn-danger-soft" onclick="deleteDraftEpisode('${key}', ${epIdx})">حذف</button>
@@ -1153,8 +1345,28 @@
                         <input type="text" id="ep-title-${idx}-${epIdx}" value="${esc(ep.title || `الحلقة ${epNum}`)}" />
                       </div>
                       <div class="field">
-                        <label>رابط الحلقة:</label>
+                        <label>رابط الحلقة (الأساسي):</label>
                         <input type="url" id="ep-url-${idx}-${epIdx}" value="${esc(ep.videoUrl || "")}" placeholder="https://..." />
+                      </div>
+                      <div class="quality-box">
+                        <div class="quality-header">
+                          <span class="quality-title">جودات الحلقة (1080 / 720 / 480)</span>
+                          <button type="button" class="btn-mini btn-gray" onclick="autoFillQualitiesFromMain('ep-q1080-${idx}-${epIdx}', 'ep-q720-${idx}-${epIdx}', 'ep-q480-${idx}-${epIdx}', 'ep-url-${idx}-${epIdx}')">تعبئة من الرابط</button>
+                        </div>
+                        <div class="grid-3">
+                          <div>
+                            <label>1080:</label>
+                            <input type="url" id="ep-q1080-${idx}-${epIdx}" value="${esc(epQ["1080"])}" placeholder="https://..." />
+                          </div>
+                          <div>
+                            <label>720:</label>
+                            <input type="url" id="ep-q720-${idx}-${epIdx}" value="${esc(epQ["720"])}" placeholder="https://..." />
+                          </div>
+                          <div>
+                            <label>480:</label>
+                            <input type="url" id="ep-q480-${idx}-${epIdx}" value="${esc(epQ["480"])}" placeholder="https://..." />
+                          </div>
+                        </div>
                       </div>
                       <div class="field">
                         <label>رابط الترجمة العربية للحلقة (اختياري):</label>
@@ -1180,7 +1392,7 @@
           episodesHtml = `
             <div class="episodes-box-inner">
               <div class="card-title-row">
-                <div class="episodes-box-title">إدارة المواسم والحلقات (بأي ترتيب يعجبك)</div>
+                <div class="episodes-box-title">إدارة المواسم والحلقات والجودات (بأي ترتيب يعجبك)</div>
                 <button type="button" class="btn-mini btn-blue" onclick="openEpisodeEditor('${key}', 'add', -1)">+ إضافة حلقة جديدة</button>
               </div>
               ${isAddingEp ? `
@@ -1200,8 +1412,28 @@
                     <input type="text" id="ep-add-title-${idx}" value="الحلقة ${nextSuggestedNum}" />
                   </div>
                   <div class="field">
-                    <label>رابط الحلقة الجديدة:</label>
+                    <label>رابط الحلقة الجديدة (الأساسي):</label>
                     <input type="url" id="ep-add-url-${idx}" placeholder="https://..." />
+                  </div>
+                  <div class="quality-box">
+                    <div class="quality-header">
+                      <span class="quality-title">جودات الحلقة الجديدة (1080 / 720 / 480)</span>
+                      <button type="button" class="btn-mini btn-gray" onclick="autoFillQualitiesFromMain('ep-add-q1080-${idx}', 'ep-add-q720-${idx}', 'ep-add-q480-${idx}', 'ep-add-url-${idx}')">تعبئة من الرابط</button>
+                    </div>
+                    <div class="grid-3">
+                      <div>
+                        <label>1080:</label>
+                        <input type="url" id="ep-add-q1080-${idx}" placeholder="https://..." />
+                      </div>
+                      <div>
+                        <label>720:</label>
+                        <input type="url" id="ep-add-q720-${idx}" placeholder="https://..." />
+                      </div>
+                      <div>
+                        <label>480:</label>
+                        <input type="url" id="ep-add-q480-${idx}" placeholder="https://..." />
+                      </div>
+                    </div>
                   </div>
                   <div class="field">
                     <label>رابط الترجمة العربية للحلقة (اختياري):</label>
@@ -1222,6 +1454,8 @@
           `;
         }
 
+        const encodedMainUrl = encodeURIComponent(displayUrl || "");
+
         const card = document.createElement("div");
         card.className = `entry-card ${isDeleted ? "marked-delete" : ""}`;
         card.innerHTML = `
@@ -1229,13 +1463,15 @@
             <div>
               <div class="entry-title">${esc(displayTitle)}</div>
               <div class="entry-meta">التصنيف: ${esc(displayCategory)}${epInfo}</div>
-              ${!seriesItem ? `<div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>` : ""}
+              ${!seriesItem && displayUrl ? `<div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>` : ""}
+              ${!seriesItem ? renderQualityBadges(displayQualities) : ""}
               ${displaySubtitle ? `<div class="entry-meta">الترجمة العربية: ${esc(displaySubtitle)}</div>` : ""}
               ${renderSourceBlock(displaySource, "مكان جبتة")}
               ${isDeleted ? `<span class="delete-pill">معلّم للحذف في localStorage (بانتظار النشر)</span>` : ""}
               ${(!isDeleted && pending) ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
             </div>
             <div class="entry-actions-right">
+              ${!seriesItem && displayUrl ? `<button type="button" class="btn-mini btn-gray" onclick="copyTextToClipboard(decodeURIComponent('${encodedMainUrl}'), 'رابط الفيديو')">نسخ الرابط</button>` : ""}
               <button type="button" class="btn-mini btn-blue" id="btn-edit-${idx}">تعديل</button>
               <button type="button" class="btn-mini ${isDeleted ? "btn-green" : "btn-danger-soft"}" id="btn-del-${idx}">${isDeleted ? "تراجع" : "حذف"}</button>
             </div>
@@ -1266,9 +1502,31 @@
               <input type="text" id="input-src-${idx}" value="${esc(displaySource)}" placeholder="https://..." />
             </div>
             ${episodesHtml}
-            <div class="field ${seriesItem ? "hidden" : ""}" id="edit-url-wrap-${idx}">
-              <label for="input-url-${idx}">رابط الفيديو:</label>
-              <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
+            <div class="${seriesItem ? "hidden" : ""}" id="edit-url-wrap-${idx}">
+              <div class="field">
+                <label for="input-url-${idx}">رابط الفيديو (الأساسي):</label>
+                <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
+              </div>
+              <div class="quality-box">
+                <div class="quality-header">
+                  <span class="quality-title">تعديل الجودات (1080 / 720 / 480)</span>
+                  <button type="button" class="btn-mini btn-gray" onclick="autoFillQualitiesFromMain('edit-q1080-${idx}', 'edit-q720-${idx}', 'edit-q480-${idx}', 'input-url-${idx}')">تعبئة من الرابط</button>
+                </div>
+                <div class="grid-3">
+                  <div>
+                    <label>1080:</label>
+                    <input type="url" id="edit-q1080-${idx}" value="${esc(displayQualities["1080"])}" placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label>720:</label>
+                    <input type="url" id="edit-q720-${idx}" value="${esc(displayQualities["720"])}" placeholder="https://..." />
+                  </div>
+                  <div>
+                    <label>480:</label>
+                    <input type="url" id="edit-q480-${idx}" value="${esc(displayQualities["480"])}" placeholder="https://..." />
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="row-actions">
               <button type="button" class="btn-mini btn-green" id="btn-save-url-${idx}">حفظ في localStorage</button>
@@ -1332,11 +1590,13 @@
           if (seriesNow) {
             const eps = (draftEpisodesMap[key] || normalizeEpisodesList(item, pending)).map((ep, i) => {
               const epNum = Number(ep.number) || (i + 1);
+              const epUrl = cleanUrlValue(ep.videoUrl || "");
               return {
                 number: epNum,
                 season: Number(ep.season) || 1,
                 title: String(ep.title || `الحلقة ${epNum}`).trim() || `الحلقة ${epNum}`,
-                videoUrl: cleanUrlValue(ep.videoUrl || ""),
+                videoUrl: epUrl,
+                qualities: normalizeQualities(ep.qualities, epUrl),
                 sourceUrl: String(ep.sourceUrl || newSrc || "").trim(),
                 subtitleUrl: cleanUrlValue(ep.subtitleUrl || newSub || "")
               };
@@ -1360,17 +1620,26 @@
               markDeleted: false
             };
           } else {
-            const newUrl = cleanUrlValue(document.getElementById(`input-url-${idx}`)?.value || "");
+            const eq1080 = cleanUrlValue(document.getElementById(`edit-q1080-${idx}`)?.value || "");
+            const eq720 = cleanUrlValue(document.getElementById(`edit-q720-${idx}`)?.value || "");
+            const eq480 = cleanUrlValue(document.getElementById(`edit-q480-${idx}`)?.value || "");
+            const newUrl = cleanUrlValue(document.getElementById(`input-url-${idx}`)?.value || "") || eq1080 || eq720 || eq480;
             if (!newUrl) {
-              setStatus("أدخل رابط الفيديو قبل الحفظ.", "error");
+              setStatus("أدخل رابط الفيديو أو رابط جودة واحدة على الأقل قبل الحفظ.", "error");
               return;
             }
+            const editQualities = {
+              "1080": eq1080 || newUrl,
+              "720": eq720 || eq1080 || newUrl,
+              "480": eq480 || eq720 || eq1080 || newUrl
+            };
             pendingLinkUpdates[key] = {
               key,
               itemId: item.id !== undefined ? String(item.id) : "",
               title: item.title || "",
               category: item.category || "",
               newVideoUrl: newUrl,
+              editQualities,
               editTitle: newTitle,
               editCategory: newCat,
               editDescription: newDesc,
@@ -1407,11 +1676,14 @@
         const epSeason = Math.max(1, parseInt(document.getElementById(`ep-add-season-${idx}`)?.value || "1", 10) || 1);
         const epNum = Math.max(1, parseInt(document.getElementById(`ep-add-num-${idx}`)?.value || String(list.length + 1), 10) || (list.length + 1));
         const epTitle = (document.getElementById(`ep-add-title-${idx}`)?.value || "").trim() || `الحلقة ${epNum}`;
-        const epUrl = cleanUrlValue(document.getElementById(`ep-add-url-${idx}`)?.value || "");
+        const q1080 = cleanUrlValue(document.getElementById(`ep-add-q1080-${idx}`)?.value || "");
+        const q720 = cleanUrlValue(document.getElementById(`ep-add-q720-${idx}`)?.value || "");
+        const q480 = cleanUrlValue(document.getElementById(`ep-add-q480-${idx}`)?.value || "");
+        const epUrl = cleanUrlValue(document.getElementById(`ep-add-url-${idx}`)?.value || "") || q1080 || q720 || q480;
         const epSub = cleanUrlValue(document.getElementById(`ep-add-sub-${idx}`)?.value || "");
         const epSrc = (document.getElementById(`ep-add-src-${idx}`)?.value || "").trim();
         if (!epUrl) {
-          setStatus("أدخل رابط الحلقة الجديدة أولاً.", "error");
+          setStatus("أدخل رابط الحلقة الجديدة أو رابط جودة واحدة أولاً.", "error");
           return;
         }
         list.push({
@@ -1419,6 +1691,11 @@
           season: epSeason,
           title: epTitle,
           videoUrl: epUrl,
+          qualities: {
+            "1080": q1080 || epUrl,
+            "720": q720 || q1080 || epUrl,
+            "480": q480 || q720 || q1080 || epUrl
+          },
           subtitleUrl: epSub,
           sourceUrl: epSrc
         });
@@ -1426,7 +1703,10 @@
         const epSeason = Math.max(1, parseInt(document.getElementById(`ep-season-${idx}-${epIndex}`)?.value || String(list[epIndex].season || 1), 10) || 1);
         const epNum = Math.max(1, parseInt(document.getElementById(`ep-num-${idx}-${epIndex}`)?.value || String(list[epIndex].number || (epIndex + 1)), 10) || (epIndex + 1));
         const epTitle = (document.getElementById(`ep-title-${idx}-${epIndex}`)?.value || "").trim() || `الحلقة ${epNum}`;
-        const epUrl = cleanUrlValue(document.getElementById(`ep-url-${idx}-${epIndex}`)?.value || "");
+        const q1080 = cleanUrlValue(document.getElementById(`ep-q1080-${idx}-${epIndex}`)?.value || "");
+        const q720 = cleanUrlValue(document.getElementById(`ep-q720-${idx}-${epIndex}`)?.value || "");
+        const q480 = cleanUrlValue(document.getElementById(`ep-q480-${idx}-${epIndex}`)?.value || "");
+        const epUrl = cleanUrlValue(document.getElementById(`ep-url-${idx}-${epIndex}`)?.value || "") || q1080 || q720 || q480;
         const epSub = cleanUrlValue(document.getElementById(`ep-sub-${idx}-${epIndex}`)?.value || "");
         const epSrc = (document.getElementById(`ep-src-${idx}-${epIndex}`)?.value || "").trim();
         if (!epUrl) {
@@ -1438,6 +1718,11 @@
           season: epSeason,
           title: epTitle,
           videoUrl: epUrl,
+          qualities: {
+            "1080": q1080 || epUrl,
+            "720": q720 || q1080 || epUrl,
+            "480": q480 || q720 || q1080 || epUrl
+          },
           subtitleUrl: epSub,
           sourceUrl: epSrc
         };
@@ -1446,7 +1731,7 @@
       draftEpisodesMap[key] = list;
       activeEpisodeEditor[key] = null;
       renderPublishedList();
-      setStatus("تم تحديث الحلقة في المسودة بنفس الترتيب اللي اخترته؛ اضغط «حفظ في localStorage» لتثبيتها.", "info");
+      setStatus("تم تحديث الحلقة والجودات في المسودة بنفس الترتيب اللي اخترته؛ اضغط «حفظ في localStorage» لتثبيتها.", "info");
     }
 
     function deleteDraftEpisode(key, epIndex) {
@@ -1583,19 +1868,31 @@
         if (match.editSourceUrl !== undefined) updatedItem.sourceUrl = match.editSourceUrl;
 
         if (Array.isArray(match.editEpisodes)) {
-          updatedItem.episodes = match.editEpisodes.map((ep, i) => ({
-            ...ep,
-            number: Number(ep.number) || (i + 1),
-            season: Number(ep.season) || 1,
-            videoUrl: cleanUrlValue(ep.videoUrl || ""),
-            subtitleUrl: cleanUrlValue(ep.subtitleUrl || updatedItem.subtitleUrl || ""),
-            sourceUrl: String(ep.sourceUrl || updatedItem.sourceUrl || "").trim()
-          }));
+          updatedItem.episodes = match.editEpisodes.map((ep, i) => {
+            const epUrl = cleanUrlValue(ep.videoUrl || "");
+            return {
+              ...ep,
+              number: Number(ep.number) || (i + 1),
+              season: Number(ep.season) || 1,
+              videoUrl: epUrl,
+              qualities: normalizeQualities(ep.qualities, epUrl),
+              subtitleUrl: cleanUrlValue(ep.subtitleUrl || updatedItem.subtitleUrl || ""),
+              sourceUrl: String(ep.sourceUrl || updatedItem.sourceUrl || "").trim()
+            };
+          });
           updatedItem.episodesCount = updatedItem.episodes.length;
           updatedItem.videoUrl = cleanUrlValue(match.newVideoUrl || "") || updatedItem.episodes[0]?.videoUrl || cleanUrlValue(updatedItem.videoUrl || "");
+          if (updatedItem.episodes[0]?.qualities) {
+            updatedItem.qualities = updatedItem.episodes[0].qualities;
+          }
         } else {
           const cleanedUrl = cleanUrlValue(match.newVideoUrl || "");
           if (cleanedUrl) updatedItem.videoUrl = cleanedUrl;
+          if (match.editQualities) {
+            updatedItem.qualities = normalizeQualities(match.editQualities, cleanedUrl || updatedItem.videoUrl);
+          } else if (cleanedUrl) {
+            updatedItem.qualities = normalizeQualities(updatedItem.qualities, cleanedUrl);
+          }
           if (match.editEpisodesCount !== undefined) {
             if (match.editEpisodesCount > 0) {
               updatedItem.episodesCount = match.editEpisodesCount;
@@ -1619,7 +1916,12 @@
 
       const additions = [...tempItems];
       const hasFormTitle = Boolean(document.getElementById("title").value.trim());
-      const hasFormUrl = Boolean(document.getElementById("videoUrl").value.trim());
+      const hasFormUrl = Boolean(
+        document.getElementById("videoUrl").value.trim() ||
+        document.getElementById("q1080")?.value.trim() ||
+        document.getElementById("q720")?.value.trim() ||
+        document.getElementById("q480")?.value.trim()
+      );
       const isSeriesForm = isSeriesCategory(document.getElementById("category").value);
 
       if (hasFormTitle || (hasFormUrl && !isSeriesForm)) {
@@ -1763,6 +2065,47 @@
         navigator.clipboard.writeText(box.value).catch(() => {});
       }
       setStatus("تم نسخ كود JSON.", "success");
+    }
+
+    function downloadJsonBackup() {
+      updateJsonPreview();
+      const text = document.getElementById("jsonBox").value || '{"videos":[]}';
+      const blob = new Blob([text], { type: "application/json;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `alawitv-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setStatus("تم تحميل نسخة JSON الاحتياطية.", "success");
+    }
+
+    function importJsonBackup(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(String(reader.result || "{}"));
+          const list = extractVideos(parsed);
+          if (!Array.isArray(list)) {
+            setStatus("صيغة ملف JSON غير صحيحة.", "error");
+            return;
+          }
+          publishedItems = list;
+          draftEpisodesMap = {};
+          savePublishedCache();
+          renderPublishedList();
+          updateJsonPreview();
+          setStatus(`تم استيراد ${list.length} عنصر إلى المعاينة المحلية؛ اضغط نشر لحفظه على GitHub.`, "success");
+        } catch (err) {
+          setStatus(`تعذر قراءة ملف JSON: ${err.message}`, "error");
+        }
+      };
+      reader.readAsText(file, "utf-8");
+      event.target.value = "";
     }
 
     loadSettings();
