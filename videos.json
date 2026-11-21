@@ -23,6 +23,22 @@
       "videoUrl": "https://live-hls-apps-aja-fa.getaj.net/AJA/01.m3u8",
       "thumbnailUrl": "",
       "category": "قنوات"
+    },
+    {
+      "id": "1795257068889_649",
+      "title": "love on the menu",
+      "description": "مسلسل دراما كوري",
+      "videoUrl": "https://142b361c5f9c0d31df22903f69a86338.r2.cloudflarestorage.com/5ttttv/originals/0fdf7e65-eb6c-485d-aa5e-6d2154f2d62d-Love_on_the_Menu__2026__Episode_1_new.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=b68eae234d246433b25e599764393052%2F20261121%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261121T085301Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Signature=2cf4ea9327e0cf9b216e792ec27a0ad5135c0fa642ff5a5480b9d9f46946a9be",
+      "thumbnailUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRT3mmF1RAAf64j9EUGDMK9cpIfaGDdF_NQZt8DOAhWkw&s=10",
+      "category": "مسلسلات",
+      "episodes": [
+        {
+          "number": 1,
+          "title": "الحلقة 1",
+          "videoUrl": "https://142b361c5f9c0d31df22903f69a86338.r2.cloudflarestorage.com/5ttttv/originals/0fdf7e65-eb6c-485d-aa5e-6d2154f2d62d-Love_on_the_Menu__2026__Episode_1_new.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=b68eae234d246433b25e599764393052%2F20261121%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261121T085301Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Signature=2cf4ea9327e0cf9b216e792ec27a0ad5135c0fa642ff5a5480b9d9f46946a9be"
+        }
+      ],
+      "episodesCount": 50
     }
   ]
 }
