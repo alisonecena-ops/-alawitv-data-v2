@@ -36,9 +36,29 @@
           "number": 1,
           "title": "الحلقة 1",
           "videoUrl": "https://142b361c5f9c0d31df22903f69a86338.r2.cloudflarestorage.com/5ttttv/originals/0fdf7e65-eb6c-485d-aa5e-6d2154f2d62d-Love_on_the_Menu__2026__Episode_1_new.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=b68eae234d246433b25e599764393052%2F20261121%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261121T085301Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Signature=2cf4ea9327e0cf9b216e792ec27a0ad5135c0fa642ff5a5480b9d9f46946a9be"
+        },
+        {
+          "number": 2,
+          "title": "الحلقة 2",
+          "videoUrl": "https://cdnvid.dramalvr.com/hls/9umstiINs4_6ae67540b5445/playlist_720p.m3u8"
+        },
+        {
+          "number": 3,
+          "title": "الحلقة 3",
+          "videoUrl": "‏https://cdnvid.dramalvr.com/hls/SQn9N3qbuI_6a6e77ffca691/playlist_720p.m3u8"
+        },
+        {
+          "number": 4,
+          "title": "الحلقة 4",
+          "videoUrl": "‏https://cdnvid.dramalvr.com/hls/9umstiINs4_6ae67540b5445/playlist_720p.m3u8"
+        },
+        {
+          "number": 5,
+          "title": "الحلقة 5",
+          "videoUrl": "‏https://cdnvid.dramalvr.com/hls/cIsqjV2pof_6a77a9520f2af/playlist_720p.m3u8"
         }
       ],
-      "episodesCount": 50
+      "episodesCount": 5
     }
   ]
 }
