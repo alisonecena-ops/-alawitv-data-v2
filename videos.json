@@ -196,6 +196,24 @@
       "thumbnailUrl": "https://ww1.goojara.to/mllezX",
       "category": "أفلام",
       "sourceUrl": "https://ww1.goojara.to/mllezX"
+    },
+    {
+      "id": "1795266308077_529",
+      "title": "The Lord of the Rings",
+      "description": "The Lord of the Rings عبر علاوي TV",
+      "videoUrl": "https://web.wootly.ch/source?id=d7fb82e89d3ebe6a04cdbcbe18dbcb38f6a4ee89&sig=ZS53asqt2nyf0F6_6FEkSw&expire=1795273437&ofs=11&usr=169329",
+      "thumbnailUrl": "",
+      "category": "مسلسلات",
+      "sourceUrl": "https://ww1.goojara.to/eLRqVz",
+      "episodes": [
+        {
+          "number": 1,
+          "title": "الحلقة 1",
+          "videoUrl": "https://web.wootly.ch/source?id=d7fb82e89d3ebe6a04cdbcbe18dbcb38f6a4ee89&sig=ZS53asqt2nyf0F6_6FEkSw&expire=1795273437&ofs=11&usr=169329",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        }
+      ],
+      "episodesCount": 8
     }
   ]
 }
