@@ -228,6 +228,25 @@
       margin-top: 3px;
       word-break: break-all;
     }
+    .source-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 5px;
+      background: #161b26;
+      border: 1px solid #283144;
+      border-radius: 7px;
+      padding: 5px 8px;
+    }
+    .source-text {
+      font-size: 11px;
+      color: #93c5fd;
+      word-break: break-all;
+      flex: 1;
+      min-width: 160px;
+    }
     .pending-pill {
       display: inline-block;
       margin-top: 5px;
@@ -256,6 +275,7 @@
       font-weight: bold;
       cursor: pointer;
       white-space: nowrap;
+      color: #ffffff;
     }
     .edit-panel {
       margin-top: 9px;
@@ -281,6 +301,7 @@
       justify-content: space-between;
       align-items: center;
       gap: 8px;
+      flex-wrap: wrap;
       background: #141822;
       border: 1px solid #252c3b;
       border-radius: 7px;
@@ -295,6 +316,12 @@
     .ep-row-url {
       font-size: 11px;
       color: #9ca3af;
+      word-break: break-all;
+      margin-top: 2px;
+    }
+    .ep-row-source {
+      font-size: 11px;
+      color: #93c5fd;
       word-break: break-all;
       margin-top: 2px;
     }
@@ -394,7 +421,7 @@
       <h2>إضافة محتوى</h2>
 
       <div class="field">
-        <label for="title">الاسم:</label>
+        <label for="title">الاسم (اسم الفيلم أو المسلسل):</label>
         <input id="title" type="text" placeholder="مثال: مسلسل الغموض أو Spider-Man" />
       </div>
 
@@ -416,7 +443,7 @@
 
       <div class="field hidden" id="episodesBox">
         <label for="episodesCount">عدد الحلقات الإجمالي للمسلسل (اختياري):</label>
-        <input id="episodesCount" type="number" min="1" placeholder="مثال: 20 (يمكن إضافة وتعديل الحلقات من التعديلات بعد النشر)" />
+        <input id="episodesCount" type="number" min="1" placeholder="مثال: 5 أو 50 (يمكن إضافة وتعديل الحلقات بعد النشر)" />
       </div>
 
       <div class="field hidden" id="wrestlingBox">
@@ -436,6 +463,11 @@
       <div class="field" id="videoUrlField">
         <label for="videoUrl" id="videoUrlLabel">رابط الفيديو (أو رابط الحلقة الأولى للمسلسل):</label>
         <input id="videoUrl" type="url" placeholder="https://..." />
+      </div>
+
+      <div class="field">
+        <label for="sourceLocation">مكان جبتة (رابط الصفحة أو المصدر حتى ترجع تنسخه مرة ثانية):</label>
+        <input id="sourceLocation" type="text" placeholder="مثال: https://site.com/series/episode-1 أو اسم المصدر..." />
       </div>
 
       <button type="button" class="btn btn-gray" onclick="addToTempList()">+ إضافة إلى المحتوى المؤقت</button>
@@ -469,13 +501,13 @@
       </div>
 
       <div class="field">
-        <input id="searchInput" type="text" placeholder="ابحث بالاسم أو التصنيف..." oninput="renderPublishedList()" />
+        <input id="searchInput" type="text" placeholder="ابحث بالاسم أو التصنيف أو مكان جبتة..." oninput="renderPublishedList()" />
       </div>
 
       <button type="button" class="btn btn-sky" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
         💾 نشر تعديلات وحذف المنشور (<span id="pendingLinksBadge">0</span> معلقة)
       </button>
-      <div class="hint">تعديلات المسلسلات والحلقات والروابط وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
+      <div class="hint">تعديلات المسلسلات والحلقات والروابط ومكان جبتة وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
 
       <div class="list" id="publishedList"></div>
     </section>
@@ -500,13 +532,29 @@
     let pendingLinkUpdates = {};
     let activeFilter = "all";
     let editingKey = null;
-    let activeEpisodeEditor = {}; // key -> { mode: 'add' | 'edit', epIndex: number }
-    let draftEpisodesMap = {}; // key -> array of { number, title, videoUrl }
+    let activeEpisodeEditor = {};
+    let draftEpisodesMap = {};
 
     function sanitizeToken(val) {
       return String(val || "")
         .replace(/[\s\u200B-\u200D\uFEFF]/g, "")
         .replace(/[^\x21-\x7E]/g, "");
+    }
+
+    function cleanUrlValue(val) {
+      const cleaned = String(val || "")
+        .replace(/[\u200E\u200F\u200B-\u200D\uFEFF]/g, "")
+        .trim();
+      const lower = cleaned.toLowerCase();
+      const httpsIdx = lower.indexOf("https://");
+      if (httpsIdx >= 0) {
+        return "https://" + cleaned.substring(httpsIdx + 8).trim();
+      }
+      const httpIdx = lower.indexOf("http://");
+      if (httpIdx >= 0) {
+        return "http://" + cleaned.substring(httpIdx + 7).trim();
+      }
+      return cleaned;
     }
 
     function setStatus(msg, level = "normal") {
@@ -525,6 +573,26 @@
         box.style.color = "#e5e7eb";
         box.style.borderColor = "#2b3140";
       }
+    }
+
+    function copyTextToClipboard(text, label = "مكان جبتة") {
+      const value = String(text || "").trim();
+      if (!value) {
+        setStatus(`لا يوجد نص محفوظ لـ «${label}».`, "error");
+        return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(value).catch(() => {});
+      }
+      const tempInput = document.createElement("textarea");
+      tempInput.value = value;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      try {
+        document.execCommand("copy");
+      } catch (_) {}
+      document.body.removeChild(tempInput);
+      setStatus(`تم نسخ ${label}: ${value}`, "success");
     }
 
     function syncTokenInput() {
@@ -624,26 +692,38 @@
       return c.includes("مسلسل") || c.includes("series");
     }
 
+    function getItemSource(item, pending) {
+      if (pending && pending.editSourceUrl !== undefined) {
+        return String(pending.editSourceUrl || "").trim();
+      }
+      if (!item) return "";
+      return String(item.sourceUrl || item.source || item.originUrl || "").trim();
+    }
+
     function normalizeEpisodesList(item, pending) {
+      const fallbackSource = getItemSource(item, pending);
       if (pending && Array.isArray(pending.editEpisodes)) {
         return pending.editEpisodes.map((ep, i) => ({
           number: Number(ep.number) || (i + 1),
           title: String(ep.title || `الحلقة ${i + 1}`),
-          videoUrl: String(ep.videoUrl || "")
+          videoUrl: cleanUrlValue(ep.videoUrl || ""),
+          sourceUrl: String(ep.sourceUrl || ep.source || fallbackSource || "").trim()
         }));
       }
       if (item && Array.isArray(item.episodes) && item.episodes.length > 0) {
         return item.episodes.map((ep, i) => ({
           number: Number(ep.number) || (i + 1),
           title: String(ep.title || `الحلقة ${i + 1}`),
-          videoUrl: String(ep.videoUrl || ep.url || "")
+          videoUrl: cleanUrlValue(ep.videoUrl || ep.url || ""),
+          sourceUrl: String(ep.sourceUrl || ep.source || fallbackSource || "").trim()
         }));
       }
-      if (item && String(item.videoUrl || "").trim() !== "") {
+      if (item && cleanUrlValue(item.videoUrl || "") !== "") {
         return [{
           number: 1,
           title: "الحلقة 1",
-          videoUrl: String(item.videoUrl || "").trim()
+          videoUrl: cleanUrlValue(item.videoUrl || ""),
+          sourceUrl: fallbackSource
         }];
       }
       return [];
@@ -694,8 +774,9 @@
       const catVal = document.getElementById("category").value;
       const promoVal = document.getElementById("promotion").value.trim();
       const episodesRaw = document.getElementById("episodesCount").value.trim();
-      const thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
-      const videoUrl = document.getElementById("videoUrl").value.trim();
+      const thumbnailUrl = cleanUrlValue(document.getElementById("thumbnailUrl").value);
+      const videoUrl = cleanUrlValue(document.getElementById("videoUrl").value);
+      const sourceUrl = document.getElementById("sourceLocation").value.trim();
 
       const seriesMode = isSeriesCategory(catVal);
 
@@ -717,7 +798,8 @@
         description: description || `${title} عبر علاوي TV`,
         videoUrl: videoUrl || "",
         thumbnailUrl,
-        category: finalCategory
+        category: finalCategory,
+        sourceUrl
       };
 
       if (seriesMode) {
@@ -726,7 +808,8 @@
           episodes.push({
             number: 1,
             title: "الحلقة 1",
-            videoUrl
+            videoUrl,
+            sourceUrl
           });
         }
         entry.episodes = episodes;
@@ -747,6 +830,7 @@
       document.getElementById("description").value = "";
       document.getElementById("thumbnailUrl").value = "";
       document.getElementById("videoUrl").value = "";
+      document.getElementById("sourceLocation").value = "";
       document.getElementById("episodesCount").value = "";
       document.getElementById("promotion").value = "";
       document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
@@ -796,6 +880,19 @@
         .replace(/"/g, "&quot;");
     }
 
+    function renderSourceBlock(sourceText, label = "مكان جبتة") {
+      if (!sourceText) {
+        return `<div class="entry-meta">${esc(label)}: غير محدد</div>`;
+      }
+      const encoded = encodeURIComponent(sourceText);
+      return `
+        <div class="source-row">
+          <div class="source-text">${esc(label)}: ${esc(sourceText)}</div>
+          <button type="button" class="btn-mini btn-blue" onclick="copyTextToClipboard(decodeURIComponent('${encoded}'), '${esc(label)}')">📋 نسخ المكان</button>
+        </div>
+      `;
+    }
+
     function renderTempList() {
       const list = document.getElementById("tempList");
       document.getElementById("tempBadge").textContent = String(tempItems.length);
@@ -813,6 +910,7 @@
         const epInfo = isSeriesCategory(item.category)
           ? ` | عدد الحلقات: ${epCount > 0 ? epCount : "بانتظار الإضافة"}`
           : "";
+        const src = getItemSource(item, null);
         const card = document.createElement("div");
         card.className = "entry-card";
         card.innerHTML = `
@@ -821,6 +919,7 @@
               <div class="entry-title">${esc(item.title)}</div>
               <div class="entry-meta">التصنيف: ${esc(item.category)}${epInfo}</div>
               ${item.videoUrl ? `<div class="entry-meta">الرابط: ${esc(item.videoUrl)}</div>` : ""}
+              ${renderSourceBlock(src, "مكان جبتة")}
             </div>
             <button type="button" class="btn-mini btn-danger-soft" onclick="removeTempItem(${idx})">حذف</button>
           </div>
@@ -888,11 +987,14 @@
 
       const rows = publishedItems
         .map((item, idx) => ({ item, idx, key: itemKey(item, idx) }))
-        .filter(({ item }) => {
+        .filter(({ item, idx }) => {
           if (!matchCategoryFilter(item.category)) return false;
           if (!query) return true;
+          const { data: pending } = findPendingForItem(item, idx);
+          const src = getItemSource(item, pending);
           return String(item.title || "").toLowerCase().includes(query) ||
-                 String(item.category || "").toLowerCase().includes(query);
+                 String(item.category || "").toLowerCase().includes(query) ||
+                 String(src || "").toLowerCase().includes(query);
         });
 
       if (rows.length === 0) {
@@ -907,6 +1009,7 @@
         const displayCategory = (pending && pending.editCategory) ? pending.editCategory : (item.category || "غير محدد");
         const displayDesc = (pending && pending.editDescription !== undefined) ? pending.editDescription : (item.description || "");
         const displayThumb = (pending && pending.editThumbnailUrl !== undefined) ? pending.editThumbnailUrl : (item.thumbnailUrl || "");
+        const displaySource = getItemSource(item, pending);
         const seriesItem = isSeriesCategory(displayCategory);
 
         const episodesList = seriesItem ? getDraftEpisodes(key, item, pending) : [];
@@ -929,13 +1032,17 @@
           const epRowsHtml = episodesList.length > 0
             ? episodesList.map((ep, epIdx) => {
                 const isEditingThisEp = activeEp && activeEp.mode === "edit" && activeEp.epIndex === epIdx;
+                const epSrc = String(ep.sourceUrl || ep.source || displaySource || "").trim();
+                const encodedEpSrc = encodeURIComponent(epSrc);
                 return `
                   <div class="ep-row">
                     <div>
                       <div class="ep-row-title">${esc(ep.title || `الحلقة ${ep.number || epIdx + 1}`)}</div>
                       <div class="ep-row-url">${esc(ep.videoUrl || "بدون رابط")}</div>
+                      <div class="ep-row-source">مكان جبتة: ${esc(epSrc || "غير محدد")}</div>
                     </div>
                     <div class="entry-actions-right">
+                      ${epSrc ? `<button type="button" class="btn-mini btn-blue" onclick="copyTextToClipboard(decodeURIComponent('${encodedEpSrc}'), 'مكان الحلقة')">📋 نسخ المكان</button>` : ""}
                       <button type="button" class="btn-mini btn-amber" onclick="openEpisodeEditor('${key}', 'edit', ${epIdx})">تعديل الحلقة</button>
                       <button type="button" class="btn-mini btn-danger-soft" onclick="deleteDraftEpisode('${key}', ${epIdx})">حذف</button>
                     </div>
@@ -949,6 +1056,10 @@
                       <div class="field">
                         <label>رابط الحلقة:</label>
                         <input type="url" id="ep-url-${idx}-${epIdx}" value="${esc(ep.videoUrl || "")}" placeholder="https://..." />
+                      </div>
+                      <div class="field">
+                        <label>مكان جبتة (رابط صفحة/مصدر الحلقة):</label>
+                        <input type="text" id="ep-src-${idx}-${epIdx}" value="${esc(epSrc)}" placeholder="https://..." />
                       </div>
                       <div class="row-actions">
                         <button type="button" class="btn-mini btn-green" onclick="saveDraftEpisode('${key}', ${idx}, 'edit', ${epIdx})">حفظ الحلقة</button>
@@ -979,6 +1090,10 @@
                     <label>رابط الحلقة الجديدة:</label>
                     <input type="url" id="ep-add-url-${idx}" placeholder="https://..." />
                   </div>
+                  <div class="field">
+                    <label>مكان جبتة (رابط صفحة/مصدر الحلقة):</label>
+                    <input type="text" id="ep-add-src-${idx}" value="${esc(displaySource)}" placeholder="https://..." />
+                  </div>
                   <div class="row-actions">
                     <button type="button" class="btn-mini btn-green" onclick="saveDraftEpisode('${key}', ${idx}, 'add', -1)">إضافة للقائمة</button>
                     <button type="button" class="btn-mini btn-gray" onclick="closeEpisodeEditor('${key}')">إلغاء</button>
@@ -998,6 +1113,7 @@
               <div class="entry-title">${esc(displayTitle)}</div>
               <div class="entry-meta">التصنيف: ${esc(displayCategory)}${epInfo}</div>
               ${!seriesItem ? `<div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>` : ""}
+              ${renderSourceBlock(displaySource, "مكان جبتة")}
               ${isDeleted ? `<span class="delete-pill">معلّم للحذف في localStorage (بانتظار النشر)</span>` : ""}
               ${(!isDeleted && pending) ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
             </div>
@@ -1022,6 +1138,10 @@
             <div class="field">
               <label for="input-thumb-${idx}">رابط الصورة:</label>
               <input type="url" id="input-thumb-${idx}" value="${esc(displayThumb)}" placeholder="https://..." />
+            </div>
+            <div class="field">
+              <label for="input-src-${idx}">مكان جبتة (رابط المصدر/الصفحة):</label>
+              <input type="text" id="input-src-${idx}" value="${esc(displaySource)}" placeholder="https://..." />
             </div>
             ${episodesHtml}
             <div class="field ${seriesItem ? "hidden" : ""}" id="edit-url-wrap-${idx}">
@@ -1082,16 +1202,18 @@
           const newTitle = (document.getElementById(`input-title-${idx}`)?.value || "").trim() || (item.title || "");
           const newCat = (document.getElementById(`input-cat-${idx}`)?.value || "").trim() || (item.category || "");
           const newDesc = (document.getElementById(`input-desc-${idx}`)?.value || "").trim();
-          const newThumb = (document.getElementById(`input-thumb-${idx}`)?.value || "").trim();
+          const newThumb = cleanUrlValue(document.getElementById(`input-thumb-${idx}`)?.value || "");
+          const newSrc = (document.getElementById(`input-src-${idx}`)?.value || "").trim();
           const seriesNow = isSeriesCategory(newCat);
 
           if (seriesNow) {
             const eps = (draftEpisodesMap[key] || normalizeEpisodesList(item, pending)).map((ep, i) => ({
               number: i + 1,
               title: String(ep.title || `الحلقة ${i + 1}`).trim() || `الحلقة ${i + 1}`,
-              videoUrl: String(ep.videoUrl || "").trim()
+              videoUrl: cleanUrlValue(ep.videoUrl || ""),
+              sourceUrl: String(ep.sourceUrl || newSrc || "").trim()
             }));
-            const primaryUrl = eps[0]?.videoUrl || item.videoUrl || "";
+            const primaryUrl = eps[0]?.videoUrl || cleanUrlValue(item.videoUrl || "");
 
             pendingLinkUpdates[key] = {
               key,
@@ -1103,12 +1225,13 @@
               editCategory: newCat,
               editDescription: newDesc,
               editThumbnailUrl: newThumb,
+              editSourceUrl: newSrc,
               editEpisodes: eps,
               editEpisodesCount: eps.length,
               markDeleted: false
             };
           } else {
-            const newUrl = (document.getElementById(`input-url-${idx}`)?.value || "").trim();
+            const newUrl = cleanUrlValue(document.getElementById(`input-url-${idx}`)?.value || "");
             if (!newUrl) {
               setStatus("أدخل رابط الفيديو قبل الحفظ.", "error");
               return;
@@ -1123,6 +1246,7 @@
               editCategory: newCat,
               editDescription: newDesc,
               editThumbnailUrl: newThumb,
+              editSourceUrl: newSrc,
               markDeleted: false
             };
           }
@@ -1151,7 +1275,8 @@
       const list = draftEpisodesMap[key] || [];
       if (mode === "add") {
         const epTitle = (document.getElementById(`ep-add-title-${idx}`)?.value || "").trim() || `الحلقة ${list.length + 1}`;
-        const epUrl = (document.getElementById(`ep-add-url-${idx}`)?.value || "").trim();
+        const epUrl = cleanUrlValue(document.getElementById(`ep-add-url-${idx}`)?.value || "");
+        const epSrc = (document.getElementById(`ep-add-src-${idx}`)?.value || "").trim();
         if (!epUrl) {
           setStatus("أدخل رابط الحلقة الجديدة أولاً.", "error");
           return;
@@ -1159,11 +1284,13 @@
         list.push({
           number: list.length + 1,
           title: epTitle,
-          videoUrl: epUrl
+          videoUrl: epUrl,
+          sourceUrl: epSrc
         });
       } else if (mode === "edit" && list[epIndex]) {
         const epTitle = (document.getElementById(`ep-title-${idx}-${epIndex}`)?.value || "").trim() || `الحلقة ${epIndex + 1}`;
-        const epUrl = (document.getElementById(`ep-url-${idx}-${epIndex}`)?.value || "").trim();
+        const epUrl = cleanUrlValue(document.getElementById(`ep-url-${idx}-${epIndex}`)?.value || "");
+        const epSrc = (document.getElementById(`ep-src-${idx}-${epIndex}`)?.value || "").trim();
         if (!epUrl) {
           setStatus("أدخل رابط الحلقة قبل الحفظ.", "error");
           return;
@@ -1171,7 +1298,8 @@
         list[epIndex] = {
           number: epIndex + 1,
           title: epTitle,
-          videoUrl: epUrl
+          videoUrl: epUrl,
+          sourceUrl: epSrc
         };
       }
 
@@ -1319,14 +1447,19 @@
           if (match.editTitle) updatedItem.title = match.editTitle;
           if (match.editCategory) updatedItem.category = match.editCategory;
           if (match.editDescription !== undefined) updatedItem.description = match.editDescription;
-          if (match.editThumbnailUrl !== undefined) updatedItem.thumbnailUrl = match.editThumbnailUrl;
+          if (match.editThumbnailUrl !== undefined) updatedItem.thumbnailUrl = cleanUrlValue(match.editThumbnailUrl);
+          if (match.editSourceUrl !== undefined) updatedItem.sourceUrl = match.editSourceUrl;
 
           if (Array.isArray(match.editEpisodes)) {
-            updatedItem.episodes = match.editEpisodes;
-            updatedItem.episodesCount = match.editEpisodes.length;
-            updatedItem.videoUrl = match.editEpisodes[0]?.videoUrl || match.newVideoUrl || updatedItem.videoUrl || "";
+            updatedItem.episodes = match.editEpisodes.map(ep => ({
+              ...ep,
+              videoUrl: cleanUrlValue(ep.videoUrl || ""),
+              sourceUrl: String(ep.sourceUrl || updatedItem.sourceUrl || "").trim()
+            }));
+            updatedItem.episodesCount = updatedItem.episodes.length;
+            updatedItem.videoUrl = updatedItem.episodes[0]?.videoUrl || cleanUrlValue(match.newVideoUrl || "") || cleanUrlValue(updatedItem.videoUrl || "");
           } else {
-            if (match.newVideoUrl) updatedItem.videoUrl = match.newVideoUrl;
+            if (match.newVideoUrl) updatedItem.videoUrl = cleanUrlValue(match.newVideoUrl);
             if (match.editEpisodesCount !== undefined) {
               if (match.editEpisodesCount > 0) {
                 updatedItem.episodesCount = match.editEpisodesCount;
