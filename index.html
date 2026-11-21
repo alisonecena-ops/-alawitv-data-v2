@@ -169,6 +169,10 @@
     .btn-green {
       background: #16a34a;
     }
+    .btn-amber {
+      background: #d97706;
+      color: #ffffff;
+    }
     .btn-danger-soft {
       background: #3f191d;
       color: #fca5a5;
@@ -257,6 +261,50 @@
       margin-top: 9px;
       padding-top: 9px;
       border-top: 1px dashed #2e3647;
+    }
+    .episodes-box-inner {
+      background: #0d1016;
+      border: 1px solid #262d3d;
+      border-radius: 9px;
+      padding: 10px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .episodes-box-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #fbbf24;
+      margin-bottom: 8px;
+    }
+    .ep-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      background: #141822;
+      border: 1px solid #252c3b;
+      border-radius: 7px;
+      padding: 7px 9px;
+      margin-bottom: 6px;
+    }
+    .ep-row-title {
+      font-size: 12px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+    .ep-row-url {
+      font-size: 11px;
+      color: #9ca3af;
+      word-break: break-all;
+      margin-top: 2px;
+    }
+    .ep-edit-form {
+      background: #171c28;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 9px;
+      margin-top: 6px;
+      margin-bottom: 8px;
     }
     .row-actions {
       display: flex;
@@ -347,7 +395,7 @@
 
       <div class="field">
         <label for="title">الاسم:</label>
-        <input id="title" type="text" placeholder="مثال: Spider-Man أو AEW Dynamite" />
+        <input id="title" type="text" placeholder="مثال: مسلسل الغموض أو Spider-Man" />
       </div>
 
       <div class="field">
@@ -367,8 +415,8 @@
       </div>
 
       <div class="field hidden" id="episodesBox">
-        <label for="episodesCount">عدد الحلقات للمسلسلات:</label>
-        <input id="episodesCount" type="number" min="1" placeholder="مثال: 50" />
+        <label for="episodesCount">عدد الحلقات الإجمالي للمسلسل (اختياري):</label>
+        <input id="episodesCount" type="number" min="1" placeholder="مثال: 20 (يمكن إضافة وتعديل الحلقات من التعديلات بعد النشر)" />
       </div>
 
       <div class="field hidden" id="wrestlingBox">
@@ -385,8 +433,8 @@
         <input id="thumbnailUrl" type="url" placeholder="https://..." />
       </div>
 
-      <div class="field">
-        <label for="videoUrl">رابط الفيديو:</label>
+      <div class="field" id="videoUrlField">
+        <label for="videoUrl" id="videoUrlLabel">رابط الفيديو (أو رابط الحلقة الأولى للمسلسل):</label>
         <input id="videoUrl" type="url" placeholder="https://..." />
       </div>
 
@@ -427,7 +475,7 @@
       <button type="button" class="btn btn-sky" id="publishLinksBtn" onclick="publishPendingLinkUpdates()">
         💾 نشر تعديلات وحذف المنشور (<span id="pendingLinksBadge">0</span> معلقة)
       </button>
-      <div class="hint">تعديلات الروابط والبيانات وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
+      <div class="hint">تعديلات المسلسلات والحلقات والروابط وطلبات الحذف تُحفظ في localStorage ولا تضيع عند إغلاق الصفحة أو فشل النشر.</div>
 
       <div class="list" id="publishedList"></div>
     </section>
@@ -452,6 +500,8 @@
     let pendingLinkUpdates = {};
     let activeFilter = "all";
     let editingKey = null;
+    let activeEpisodeEditor = {}; // key -> { mode: 'add' | 'edit', epIndex: number }
+    let draftEpisodesMap = {}; // key -> array of { number, title, videoUrl }
 
     function sanitizeToken(val) {
       return String(val || "")
@@ -574,16 +624,47 @@
       return c.includes("مسلسل") || c.includes("series");
     }
 
+    function normalizeEpisodesList(item, pending) {
+      if (pending && Array.isArray(pending.editEpisodes)) {
+        return pending.editEpisodes.map((ep, i) => ({
+          number: Number(ep.number) || (i + 1),
+          title: String(ep.title || `الحلقة ${i + 1}`),
+          videoUrl: String(ep.videoUrl || "")
+        }));
+      }
+      if (item && Array.isArray(item.episodes) && item.episodes.length > 0) {
+        return item.episodes.map((ep, i) => ({
+          number: Number(ep.number) || (i + 1),
+          title: String(ep.title || `الحلقة ${i + 1}`),
+          videoUrl: String(ep.videoUrl || ep.url || "")
+        }));
+      }
+      if (item && String(item.videoUrl || "").trim() !== "") {
+        return [{
+          number: 1,
+          title: "الحلقة 1",
+          videoUrl: String(item.videoUrl || "").trim()
+        }];
+      }
+      return [];
+    }
+
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
       const epBox = document.getElementById("episodesBox");
       const wrBox = document.getElementById("wrestlingBox");
+      const urlLabel = document.getElementById("videoUrlLabel");
+      const urlInput = document.getElementById("videoUrl");
 
       if (isSeriesCategory(cat)) {
         epBox.classList.remove("hidden");
+        urlLabel.textContent = "رابط الحلقة الأولى (اختياري؛ يمكنك إضافة وتعديل الحلقات بعد النشر):";
+        urlInput.placeholder = "https://... (اختياري للمسلسل)";
       } else {
         epBox.classList.add("hidden");
         document.getElementById("episodesCount").value = "";
+        urlLabel.textContent = "رابط الفيديو:";
+        urlInput.placeholder = "https://...";
       }
 
       if (cat === "مصارعة WWE" || cat === "مصارعة AEW") {
@@ -616,8 +697,13 @@
       const thumbnailUrl = document.getElementById("thumbnailUrl").value.trim();
       const videoUrl = document.getElementById("videoUrl").value.trim();
 
-      if (!title || !videoUrl) {
-        return { error: "يرجى إدخال الاسم ورابط الفيديو على الأقل." };
+      const seriesMode = isSeriesCategory(catVal);
+
+      if (!title) {
+        return { error: "يرجى إدخال الاسم." };
+      }
+      if (!seriesMode && !videoUrl) {
+        return { error: "يرجى إدخال رابط الفيديو." };
       }
 
       let finalCategory = catVal;
@@ -629,15 +715,27 @@
         id: String(Date.now()) + "_" + Math.floor(Math.random() * 1000),
         title,
         description: description || `${title} عبر علاوي TV`,
-        videoUrl,
+        videoUrl: videoUrl || "",
         thumbnailUrl,
         category: finalCategory
       };
 
-      if (isSeriesCategory(finalCategory) && episodesRaw) {
-        const epNum = parseInt(episodesRaw, 10);
+      if (seriesMode) {
+        const episodes = [];
+        if (videoUrl) {
+          episodes.push({
+            number: 1,
+            title: "الحلقة 1",
+            videoUrl
+          });
+        }
+        entry.episodes = episodes;
+
+        const epNum = episodesRaw ? parseInt(episodesRaw, 10) : 0;
         if (!Number.isNaN(epNum) && epNum > 0) {
-          entry.episodesCount = epNum;
+          entry.episodesCount = Math.max(epNum, episodes.length);
+        } else if (episodes.length > 0) {
+          entry.episodesCount = episodes.length;
         }
       }
 
@@ -709,7 +807,12 @@
       }
 
       tempItems.forEach((item, idx) => {
-        const epInfo = item.episodesCount ? ` | عدد الحلقات: ${item.episodesCount}` : "";
+        const epCount = Array.isArray(item.episodes) && item.episodes.length > 0
+          ? item.episodes.length
+          : (item.episodesCount || 0);
+        const epInfo = isSeriesCategory(item.category)
+          ? ` | عدد الحلقات: ${epCount > 0 ? epCount : "بانتظار الإضافة"}`
+          : "";
         const card = document.createElement("div");
         card.className = "entry-card";
         card.innerHTML = `
@@ -717,7 +820,7 @@
             <div>
               <div class="entry-title">${esc(item.title)}</div>
               <div class="entry-meta">التصنيف: ${esc(item.category)}${epInfo}</div>
-              <div class="entry-meta">الرابط: ${esc(item.videoUrl)}</div>
+              ${item.videoUrl ? `<div class="entry-meta">الرابط: ${esc(item.videoUrl)}</div>` : ""}
             </div>
             <button type="button" class="btn-mini btn-danger-soft" onclick="removeTempItem(${idx})">حذف</button>
           </div>
@@ -764,6 +867,13 @@
       return { key: k, data: null };
     }
 
+    function getDraftEpisodes(key, item, pending) {
+      if (!Array.isArray(draftEpisodesMap[key])) {
+        draftEpisodesMap[key] = normalizeEpisodesList(item, pending);
+      }
+      return draftEpisodesMap[key];
+    }
+
     function renderPublishedList() {
       const list = document.getElementById("publishedList");
       const query = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
@@ -797,14 +907,88 @@
         const displayCategory = (pending && pending.editCategory) ? pending.editCategory : (item.category || "غير محدد");
         const displayDesc = (pending && pending.editDescription !== undefined) ? pending.editDescription : (item.description || "");
         const displayThumb = (pending && pending.editThumbnailUrl !== undefined) ? pending.editThumbnailUrl : (item.thumbnailUrl || "");
+        const seriesItem = isSeriesCategory(displayCategory);
+
+        const episodesList = seriesItem ? getDraftEpisodes(key, item, pending) : [];
         const rawEpisodes = (pending && pending.editEpisodesCount !== undefined)
           ? pending.editEpisodesCount
-          : (item.episodesCount || item.episodeCount || "");
+          : (episodesList.length > 0 ? episodesList.length : (item.episodesCount || item.episodeCount || ""));
         const displayEpisodes = rawEpisodes ? Number(rawEpisodes) : "";
-        const displayUrl = (pending && pending.newVideoUrl) ? pending.newVideoUrl : (item.videoUrl || "");
-        const epInfo = displayEpisodes ? ` | عدد الحلقات: ${displayEpisodes}` : (isSeriesCategory(displayCategory) ? ` | عدد الحلقات: غير محدد` : "");
+        const displayUrl = (pending && pending.newVideoUrl)
+          ? pending.newVideoUrl
+          : (seriesItem ? (episodesList[0]?.videoUrl || item.videoUrl || "") : (item.videoUrl || ""));
+
+        const epInfo = seriesItem
+          ? ` | عدد الحلقات: ${episodesList.length > 0 ? episodesList.length : (displayEpisodes || 0)}`
+          : (displayEpisodes ? ` | عدد الحلقات: ${displayEpisodes}` : "");
         const isOpen = editingKey === key;
-        const showEpisodesField = isSeriesCategory(displayCategory) || Boolean(displayEpisodes);
+        const activeEp = activeEpisodeEditor[key] || null;
+
+        let episodesHtml = "";
+        if (seriesItem) {
+          const epRowsHtml = episodesList.length > 0
+            ? episodesList.map((ep, epIdx) => {
+                const isEditingThisEp = activeEp && activeEp.mode === "edit" && activeEp.epIndex === epIdx;
+                return `
+                  <div class="ep-row">
+                    <div>
+                      <div class="ep-row-title">${esc(ep.title || `الحلقة ${ep.number || epIdx + 1}`)}</div>
+                      <div class="ep-row-url">${esc(ep.videoUrl || "بدون رابط")}</div>
+                    </div>
+                    <div class="entry-actions-right">
+                      <button type="button" class="btn-mini btn-amber" onclick="openEpisodeEditor('${key}', 'edit', ${epIdx})">تعديل الحلقة</button>
+                      <button type="button" class="btn-mini btn-danger-soft" onclick="deleteDraftEpisode('${key}', ${epIdx})">حذف</button>
+                    </div>
+                  </div>
+                  ${isEditingThisEp ? `
+                    <div class="ep-edit-form">
+                      <div class="field">
+                        <label>عنوان الحلقة:</label>
+                        <input type="text" id="ep-title-${idx}-${epIdx}" value="${esc(ep.title || `الحلقة ${epIdx + 1}`)}" />
+                      </div>
+                      <div class="field">
+                        <label>رابط الحلقة:</label>
+                        <input type="url" id="ep-url-${idx}-${epIdx}" value="${esc(ep.videoUrl || "")}" placeholder="https://..." />
+                      </div>
+                      <div class="row-actions">
+                        <button type="button" class="btn-mini btn-green" onclick="saveDraftEpisode('${key}', ${idx}, 'edit', ${epIdx})">حفظ الحلقة</button>
+                        <button type="button" class="btn-mini btn-gray" onclick="closeEpisodeEditor('${key}')">إلغاء</button>
+                      </div>
+                    </div>
+                  ` : ""}
+                `;
+              }).join("")
+            : `<div class="empty">لا توجد حلقات مضافة بعد؛ اضغط «+ إضافة حلقة جديدة» لإضافة الحلقة الأولى.</div>`;
+
+          const isAddingEp = activeEp && activeEp.mode === "add";
+          const nextEpNum = episodesList.length + 1;
+
+          episodesHtml = `
+            <div class="episodes-box-inner">
+              <div class="card-title-row">
+                <div class="episodes-box-title">تعديل يا حلقة؟ (إدارة حلقات المسلسل)</div>
+                <button type="button" class="btn-mini btn-blue" onclick="openEpisodeEditor('${key}', 'add', -1)">+ إضافة حلقة جديدة</button>
+              </div>
+              ${isAddingEp ? `
+                <div class="ep-edit-form">
+                  <div class="field">
+                    <label>عنوان الحلقة الجديدة:</label>
+                    <input type="text" id="ep-add-title-${idx}" value="الحلقة ${nextEpNum}" />
+                  </div>
+                  <div class="field">
+                    <label>رابط الحلقة الجديدة:</label>
+                    <input type="url" id="ep-add-url-${idx}" placeholder="https://..." />
+                  </div>
+                  <div class="row-actions">
+                    <button type="button" class="btn-mini btn-green" onclick="saveDraftEpisode('${key}', ${idx}, 'add', -1)">إضافة للقائمة</button>
+                    <button type="button" class="btn-mini btn-gray" onclick="closeEpisodeEditor('${key}')">إلغاء</button>
+                  </div>
+                </div>
+              ` : ""}
+              ${epRowsHtml}
+            </div>
+          `;
+        }
 
         const card = document.createElement("div");
         card.className = `entry-card ${isDeleted ? "marked-delete" : ""}`;
@@ -813,7 +997,7 @@
             <div>
               <div class="entry-title">${esc(displayTitle)}</div>
               <div class="entry-meta">التصنيف: ${esc(displayCategory)}${epInfo}</div>
-              <div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>
+              ${!seriesItem ? `<div class="entry-meta">رابط الفيديو: ${esc(displayUrl)}</div>` : ""}
               ${isDeleted ? `<span class="delete-pill">معلّم للحذف في localStorage (بانتظار النشر)</span>` : ""}
               ${(!isDeleted && pending) ? `<span class="pending-pill">تعديل محفوظ في localStorage (بانتظار النشر)</span>` : ""}
             </div>
@@ -831,10 +1015,6 @@
               <label for="input-cat-${idx}">التصنيف:</label>
               <input type="text" id="input-cat-${idx}" value="${esc(displayCategory)}" oninput="toggleEditEpisodes(${idx})" />
             </div>
-            <div class="field ${showEpisodesField ? "" : "hidden"}" id="edit-ep-wrap-${idx}">
-              <label for="input-ep-${idx}">عدد الحلقات (للمسلسلات):</label>
-              <input type="number" min="1" id="input-ep-${idx}" value="${esc(String(displayEpisodes || ""))}" placeholder="مثال: 24" />
-            </div>
             <div class="field">
               <label for="input-desc-${idx}">الوصف:</label>
               <input type="text" id="input-desc-${idx}" value="${esc(displayDesc)}" />
@@ -843,7 +1023,8 @@
               <label for="input-thumb-${idx}">رابط الصورة:</label>
               <input type="url" id="input-thumb-${idx}" value="${esc(displayThumb)}" placeholder="https://..." />
             </div>
-            <div class="field">
+            ${episodesHtml}
+            <div class="field ${seriesItem ? "hidden" : ""}" id="edit-url-wrap-${idx}">
               <label for="input-url-${idx}">رابط الفيديو:</label>
               <input type="url" id="input-url-${idx}" value="${esc(displayUrl)}" placeholder="https://..." />
             </div>
@@ -856,7 +1037,14 @@
         list.appendChild(card);
 
         document.getElementById(`btn-edit-${idx}`).addEventListener("click", () => {
-          editingKey = editingKey === key ? null : key;
+          if (editingKey === key) {
+            editingKey = null;
+          } else {
+            editingKey = key;
+            if (isSeriesCategory(displayCategory)) {
+              draftEpisodesMap[key] = normalizeEpisodesList(item, pending);
+            }
+          }
           renderPublishedList();
         });
 
@@ -885,6 +1073,8 @@
 
         document.getElementById(`btn-cancel-url-${idx}`).addEventListener("click", () => {
           editingKey = null;
+          activeEpisodeEditor[key] = null;
+          delete draftEpisodesMap[key];
           renderPublishedList();
         });
 
@@ -893,32 +1083,53 @@
           const newCat = (document.getElementById(`input-cat-${idx}`)?.value || "").trim() || (item.category || "");
           const newDesc = (document.getElementById(`input-desc-${idx}`)?.value || "").trim();
           const newThumb = (document.getElementById(`input-thumb-${idx}`)?.value || "").trim();
-          const newEpRaw = (document.getElementById(`input-ep-${idx}`)?.value || "").trim();
-          const newUrl = (document.getElementById(`input-url-${idx}`)?.value || "").trim();
+          const seriesNow = isSeriesCategory(newCat);
 
-          if (!newUrl) {
-            setStatus("أدخل رابط الفيديو قبل الحفظ.", "error");
-            return;
+          if (seriesNow) {
+            const eps = (draftEpisodesMap[key] || normalizeEpisodesList(item, pending)).map((ep, i) => ({
+              number: i + 1,
+              title: String(ep.title || `الحلقة ${i + 1}`).trim() || `الحلقة ${i + 1}`,
+              videoUrl: String(ep.videoUrl || "").trim()
+            }));
+            const primaryUrl = eps[0]?.videoUrl || item.videoUrl || "";
+
+            pendingLinkUpdates[key] = {
+              key,
+              itemId: item.id !== undefined ? String(item.id) : "",
+              title: item.title || "",
+              category: item.category || "",
+              newVideoUrl: primaryUrl,
+              editTitle: newTitle,
+              editCategory: newCat,
+              editDescription: newDesc,
+              editThumbnailUrl: newThumb,
+              editEpisodes: eps,
+              editEpisodesCount: eps.length,
+              markDeleted: false
+            };
+          } else {
+            const newUrl = (document.getElementById(`input-url-${idx}`)?.value || "").trim();
+            if (!newUrl) {
+              setStatus("أدخل رابط الفيديو قبل الحفظ.", "error");
+              return;
+            }
+            pendingLinkUpdates[key] = {
+              key,
+              itemId: item.id !== undefined ? String(item.id) : "",
+              title: item.title || "",
+              category: item.category || "",
+              newVideoUrl: newUrl,
+              editTitle: newTitle,
+              editCategory: newCat,
+              editDescription: newDesc,
+              editThumbnailUrl: newThumb,
+              markDeleted: false
+            };
           }
 
-          const epParsed = newEpRaw ? parseInt(newEpRaw, 10) : 0;
-          const validEp = !Number.isNaN(epParsed) && epParsed > 0 ? epParsed : 0;
-
-          pendingLinkUpdates[key] = {
-            key,
-            itemId: item.id !== undefined ? String(item.id) : "",
-            title: item.title || "",
-            category: item.category || "",
-            newVideoUrl: newUrl,
-            editTitle: newTitle,
-            editCategory: newCat,
-            editDescription: newDesc,
-            editThumbnailUrl: newThumb,
-            editEpisodesCount: validEp,
-            markDeleted: false
-          };
           savePendingLinks();
           editingKey = null;
+          activeEpisodeEditor[key] = null;
           renderPublishedList();
           updateJsonPreview();
           setStatus(`تم حفظ تعديلات «${newTitle}» في localStorage.`, "success");
@@ -926,14 +1137,74 @@
       });
     }
 
+    function openEpisodeEditor(key, mode, epIndex) {
+      activeEpisodeEditor[key] = { mode, epIndex };
+      renderPublishedList();
+    }
+
+    function closeEpisodeEditor(key) {
+      activeEpisodeEditor[key] = null;
+      renderPublishedList();
+    }
+
+    function saveDraftEpisode(key, idx, mode, epIndex) {
+      const list = draftEpisodesMap[key] || [];
+      if (mode === "add") {
+        const epTitle = (document.getElementById(`ep-add-title-${idx}`)?.value || "").trim() || `الحلقة ${list.length + 1}`;
+        const epUrl = (document.getElementById(`ep-add-url-${idx}`)?.value || "").trim();
+        if (!epUrl) {
+          setStatus("أدخل رابط الحلقة الجديدة أولاً.", "error");
+          return;
+        }
+        list.push({
+          number: list.length + 1,
+          title: epTitle,
+          videoUrl: epUrl
+        });
+      } else if (mode === "edit" && list[epIndex]) {
+        const epTitle = (document.getElementById(`ep-title-${idx}-${epIndex}`)?.value || "").trim() || `الحلقة ${epIndex + 1}`;
+        const epUrl = (document.getElementById(`ep-url-${idx}-${epIndex}`)?.value || "").trim();
+        if (!epUrl) {
+          setStatus("أدخل رابط الحلقة قبل الحفظ.", "error");
+          return;
+        }
+        list[epIndex] = {
+          number: epIndex + 1,
+          title: epTitle,
+          videoUrl: epUrl
+        };
+      }
+
+      list.forEach((ep, i) => {
+        ep.number = i + 1;
+      });
+      draftEpisodesMap[key] = list;
+      activeEpisodeEditor[key] = null;
+      renderPublishedList();
+      setStatus("تم تحديث الحلقة في المسودة؛ اضغط «حفظ في localStorage» لتثبيت تعديلات المسلسل.", "info");
+    }
+
+    function deleteDraftEpisode(key, epIndex) {
+      const list = draftEpisodesMap[key] || [];
+      if (epIndex < 0 || epIndex >= list.length) return;
+      list.splice(epIndex, 1);
+      list.forEach((ep, i) => {
+        ep.number = i + 1;
+      });
+      draftEpisodesMap[key] = list;
+      activeEpisodeEditor[key] = null;
+      renderPublishedList();
+      setStatus("تم حذف الحلقة من المسودة؛ اضغط «حفظ في localStorage» لتثبيت التعديل.", "info");
+    }
+
     function toggleEditEpisodes(idx) {
       const catInput = document.getElementById(`input-cat-${idx}`);
-      const epWrap = document.getElementById(`edit-ep-wrap-${idx}`);
-      if (!catInput || !epWrap) return;
+      const urlWrap = document.getElementById(`edit-url-wrap-${idx}`);
+      if (!catInput || !urlWrap) return;
       if (isSeriesCategory(catInput.value)) {
-        epWrap.classList.remove("hidden");
+        urlWrap.classList.add("hidden");
       } else {
-        epWrap.classList.add("hidden");
+        urlWrap.classList.remove("hidden");
       }
     }
 
@@ -1009,6 +1280,7 @@
       try {
         const remote = await fetchRemoteFile(cfg);
         publishedItems = remote.videos;
+        draftEpisodesMap = {};
         savePublishedCache();
         renderPublishedList();
         updateJsonPreview();
@@ -1044,18 +1316,26 @@
 
         if (match) {
           const updatedItem = { ...item };
-          if (match.newVideoUrl) updatedItem.videoUrl = match.newVideoUrl;
           if (match.editTitle) updatedItem.title = match.editTitle;
           if (match.editCategory) updatedItem.category = match.editCategory;
           if (match.editDescription !== undefined) updatedItem.description = match.editDescription;
           if (match.editThumbnailUrl !== undefined) updatedItem.thumbnailUrl = match.editThumbnailUrl;
-          if (match.editEpisodesCount !== undefined) {
-            if (match.editEpisodesCount > 0) {
-              updatedItem.episodesCount = match.editEpisodesCount;
-            } else {
-              delete updatedItem.episodesCount;
+
+          if (Array.isArray(match.editEpisodes)) {
+            updatedItem.episodes = match.editEpisodes;
+            updatedItem.episodesCount = match.editEpisodes.length;
+            updatedItem.videoUrl = match.editEpisodes[0]?.videoUrl || match.newVideoUrl || updatedItem.videoUrl || "";
+          } else {
+            if (match.newVideoUrl) updatedItem.videoUrl = match.newVideoUrl;
+            if (match.editEpisodesCount !== undefined) {
+              if (match.editEpisodesCount > 0) {
+                updatedItem.episodesCount = match.editEpisodesCount;
+              } else {
+                delete updatedItem.episodesCount;
+              }
             }
           }
+
           result.push(updatedItem);
           return;
         }
@@ -1075,7 +1355,11 @@
       }
 
       const additions = [...tempItems];
-      if (document.getElementById("title").value.trim() || document.getElementById("videoUrl").value.trim()) {
+      const hasFormTitle = Boolean(document.getElementById("title").value.trim());
+      const hasFormUrl = Boolean(document.getElementById("videoUrl").value.trim());
+      const isSeriesForm = isSeriesCategory(document.getElementById("category").value);
+
+      if (hasFormTitle || (hasFormUrl && !isSeriesForm)) {
         const formRes = buildEntryFromForm();
         if (formRes.error) {
           setStatus(formRes.error, "error");
@@ -1118,6 +1402,7 @@
         }
 
         publishedItems = merged;
+        draftEpisodesMap = {};
         savePublishedCache();
 
         if (additions.length > 0) {
@@ -1182,6 +1467,7 @@
         }
 
         publishedItems = updatedList;
+        draftEpisodesMap = {};
         savePublishedCache();
         pendingLinkUpdates = {};
         savePendingLinks();
