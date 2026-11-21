@@ -288,6 +288,27 @@
       "thumbnailUrl": "",
       "category": "قنوات",
       "sourceUrl": ""
+    },
+    {
+      "id": "1795290371656_150",
+      "title": "المدينة البعيدة",
+      "description": "المدينة البعيدة عبر علاوي TV",
+      "videoUrl": "https://s48.grzcdn.com/hls/yqdzvprey3ypzfhh35mqymixve7ij5mffycyjem6kvw7f7anfgtvgu4oudia/index-v1-a1.m3u8",
+      "thumbnailUrl": "",
+      "category": "مسلسلات",
+      "sourceUrl": "https://aa.3isk.icu/3isk453040.php",
+      "season": 1,
+      "episodes": [
+        {
+          "number": 365,
+          "season": 1,
+          "title": "الحلقة 365",
+          "videoUrl": "https://s48.grzcdn.com/hls/yqdzvprey3ypzfhh35mqymixve7ij5mffycyjem6kvw7f7anfgtvgu4oudia/index-v1-a1.m3u8",
+          "sourceUrl": "https://aa.3isk.icu/3isk453040.php",
+          "subtitleUrl": ""
+        }
+      ],
+      "episodesCount": 365
     }
   ]
 }
