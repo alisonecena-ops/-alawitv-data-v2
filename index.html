@@ -367,7 +367,7 @@
       </div>
 
       <div class="field hidden" id="episodesBox">
-        <label for="episodesCount">عدد الحلقات للمسلسلات إن وجد:</label>
+        <label for="episodesCount">عدد الحلقات للمسلسلات:</label>
         <input id="episodesCount" type="number" min="1" placeholder="مثال: 50" />
       </div>
 
@@ -449,7 +449,7 @@
     let sessionToken = "";
     let tempItems = [];
     let publishedItems = [];
-    let pendingLinkUpdates = {}; // key -> { key, itemId, title, category, newVideoUrl, editTitle?, editDescription?, editCategory?, editThumbnailUrl?, editEpisodesCount?, markDeleted? }
+    let pendingLinkUpdates = {};
     let activeFilter = "all";
     let editingKey = null;
 
@@ -569,12 +569,17 @@
       localStorage.setItem(PUBLISHED_CACHE_KEY, JSON.stringify(publishedItems));
     }
 
+    function isSeriesCategory(cat) {
+      const c = String(cat || "").trim().toLowerCase();
+      return c.includes("مسلسل") || c.includes("series");
+    }
+
     function handleCategoryChange() {
       const cat = document.getElementById("category").value;
       const epBox = document.getElementById("episodesBox");
       const wrBox = document.getElementById("wrestlingBox");
 
-      if (cat === "مسلسلات") {
+      if (isSeriesCategory(cat)) {
         epBox.classList.remove("hidden");
       } else {
         epBox.classList.add("hidden");
@@ -629,7 +634,7 @@
         category: finalCategory
       };
 
-      if (catVal === "مسلسلات" && episodesRaw) {
+      if (isSeriesCategory(finalCategory) && episodesRaw) {
         const epNum = parseInt(episodesRaw, 10);
         if (!Number.isNaN(epNum) && epNum > 0) {
           entry.episodesCount = epNum;
@@ -647,6 +652,7 @@
       document.getElementById("episodesCount").value = "";
       document.getElementById("promotion").value = "";
       document.querySelectorAll(".chip-btn").forEach(b => b.classList.remove("active"));
+      handleCategoryChange();
     }
 
     function addToTempList() {
@@ -791,10 +797,14 @@
         const displayCategory = (pending && pending.editCategory) ? pending.editCategory : (item.category || "غير محدد");
         const displayDesc = (pending && pending.editDescription !== undefined) ? pending.editDescription : (item.description || "");
         const displayThumb = (pending && pending.editThumbnailUrl !== undefined) ? pending.editThumbnailUrl : (item.thumbnailUrl || "");
-        const displayEpisodes = (pending && pending.editEpisodesCount !== undefined) ? pending.editEpisodesCount : (item.episodesCount || "");
+        const rawEpisodes = (pending && pending.editEpisodesCount !== undefined)
+          ? pending.editEpisodesCount
+          : (item.episodesCount || item.episodeCount || "");
+        const displayEpisodes = rawEpisodes ? Number(rawEpisodes) : "";
         const displayUrl = (pending && pending.newVideoUrl) ? pending.newVideoUrl : (item.videoUrl || "");
-        const epInfo = displayEpisodes ? ` | عدد الحلقات: ${displayEpisodes}` : "";
+        const epInfo = displayEpisodes ? ` | عدد الحلقات: ${displayEpisodes}` : (isSeriesCategory(displayCategory) ? ` | عدد الحلقات: غير محدد` : "");
         const isOpen = editingKey === key;
+        const showEpisodesField = isSeriesCategory(displayCategory) || Boolean(displayEpisodes);
 
         const card = document.createElement("div");
         card.className = `entry-card ${isDeleted ? "marked-delete" : ""}`;
@@ -819,7 +829,11 @@
             </div>
             <div class="field">
               <label for="input-cat-${idx}">التصنيف:</label>
-              <input type="text" id="input-cat-${idx}" value="${esc(displayCategory)}" />
+              <input type="text" id="input-cat-${idx}" value="${esc(displayCategory)}" oninput="toggleEditEpisodes(${idx})" />
+            </div>
+            <div class="field ${showEpisodesField ? "" : "hidden"}" id="edit-ep-wrap-${idx}">
+              <label for="input-ep-${idx}">عدد الحلقات (للمسلسلات):</label>
+              <input type="number" min="1" id="input-ep-${idx}" value="${esc(String(displayEpisodes || ""))}" placeholder="مثال: 24" />
             </div>
             <div class="field">
               <label for="input-desc-${idx}">الوصف:</label>
@@ -828,10 +842,6 @@
             <div class="field">
               <label for="input-thumb-${idx}">رابط الصورة:</label>
               <input type="url" id="input-thumb-${idx}" value="${esc(displayThumb)}" placeholder="https://..." />
-            </div>
-            <div class="field">
-              <label for="input-ep-${idx}">عدد الحلقات (إن وجد):</label>
-              <input type="number" min="1" id="input-ep-${idx}" value="${esc(String(displayEpisodes || ""))}" placeholder="اختياري" />
             </div>
             <div class="field">
               <label for="input-url-${idx}">رابط الفيديو:</label>
@@ -914,6 +924,17 @@
           setStatus(`تم حفظ تعديلات «${newTitle}» في localStorage.`, "success");
         });
       });
+    }
+
+    function toggleEditEpisodes(idx) {
+      const catInput = document.getElementById(`input-cat-${idx}`);
+      const epWrap = document.getElementById(`edit-ep-wrap-${idx}`);
+      if (!catInput || !epWrap) return;
+      if (isSeriesCategory(catInput.value)) {
+        epWrap.classList.remove("hidden");
+      } else {
+        epWrap.classList.add("hidden");
+      }
     }
 
     function utf8ToBase64(str) {
@@ -1018,7 +1039,7 @@
         }
 
         if (match && match.markDeleted) {
-          return; // حذف العنصر من القائمة
+          return;
         }
 
         if (match) {
