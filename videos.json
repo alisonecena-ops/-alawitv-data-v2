@@ -56,9 +56,29 @@
           "number": 5,
           "title": "الحلقة 5",
           "videoUrl": "‏https://cdnvid.dramalvr.com/hls/cIsqjV2pof_6a77a9520f2af/playlist_720p.m3u8"
+        },
+        {
+          "number": 6,
+          "title": "الحلقة 6",
+          "videoUrl": "https://cdnvid.dramalvr.com/hls/6BYhdq6omL_6a78de8c9bf3a/playlist_720p.m3u8"
+        },
+        {
+          "number": 7,
+          "title": "الحلقة 7",
+          "videoUrl": "https://cdnvid.dramalvr.com/hls/fu38f6KElX_6a80d589b3633/playlist_720p.m3u8"
+        },
+        {
+          "number": 8,
+          "title": "الحلقة 8",
+          "videoUrl": "https://142b361c5f9c0d31df22903f69a86338.r2.cloudflarestorage.com/5ttttv/originals/3e358834-ac80-42a7-9970-9464a4ddb5d4-Love_on_the_Menu_Episode_8_new.mp4?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=b68eae234d246433b25e599764393052%2F20261121%2Fauto%2Fs3%2Faws4_request&X-Amz-Date=20261121T112644Z&X-Amz-SignedHeaders=host&X-Amz-Expires=10800&X-Amz-Signature=7a9f17839cd411dad3fcaeba13647b6ef88e421194d72432f42e49b944e002c9"
+        },
+        {
+          "number": 9,
+          "title": "الحلقة 9",
+          "videoUrl": "https://cdnvid.dramalvr.com/hls/CPMAiGKM0Y_6a8a06df57cb5/playlist_720p.m3u8"
         }
       ],
-      "episodesCount": 5
+      "episodesCount": 9
     }
   ]
 }
