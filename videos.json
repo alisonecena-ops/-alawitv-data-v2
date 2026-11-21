@@ -211,6 +211,48 @@
           "title": "الحلقة 1",
           "videoUrl": "https://web.wootly.ch/source?id=d7fb82e89d3ebe6a04cdbcbe18dbcb38f6a4ee89&sig=ZS53asqt2nyf0F6_6FEkSw&expire=1795273437&ofs=11&usr=169329",
           "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 2,
+          "title": "الحلقة 2",
+          "videoUrl": "https://ribe2.nebula.to/d7fb82e89d3ebe6a04cdbcbe18dbcb38f6a4ee89.mp4?md5=cI22UWN3kEftvhVlAVpbGg&expires=1795280638&fn=d7fb82e89d3ebe6a04cdbcbe18dbcb38f6a4ee89.mp4",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 3,
+          "title": "الحلقة 3",
+          "videoUrl": "https://orix.nebula.to/b972e1ae1f0f64e1d5c9e1208866db189100d1d9.mp4?md5=qJfjRtNz5urwbn-nsYny1A&expires=1795280751&fn=b972e1ae1f0f64e1d5c9e1208866db189100d1d9.mp4",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 4,
+          "title": "الحلقة 4",
+          "videoUrl": "https://web.wootly.ch/source?id=cb5c301bd719ef05598cddecda69997dd416ff51&sig=9HEnqOrsvIjkDzqoTrmYhg&expire=1795273573&ofs=11&usr=169624",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 5,
+          "title": "الحلقة 5",
+          "videoUrl": "https://web.wootly.ch/source?id=c750e033f9d30e969d7d3127dd52e40995e70e17&sig=c7DJGi_HYbpy73iTzTLzNA&expire=1795273600&ofs=11&usr=169804",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 6,
+          "title": "الحلقة 6",
+          "videoUrl": "https://web.wootly.ch/source?id=73e25de1c7f16ca0954c989f9fb2b3f084d5ce8c&sig=w3vTVOn6JxvmqQRnGHT3xQ&expire=1795273623&ofs=11&usr=169992",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 7,
+          "title": "الحلقة 7",
+          "videoUrl": "https://web.wootly.ch/source?id=71559b65e167decf36e1cfeb5a3f1402e28604c5&sig=Znk8_-ejb1HgQCgmSTqmtg&expire=1795273643&ofs=11&usr=170159",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
+        },
+        {
+          "number": 8,
+          "title": "الحلقة 8",
+          "videoUrl": "https://web.wootly.ch/source?id=711bb35dd80a7ca49accce7f809a4e303a3bf450&sig=5orfIgxQI_9qeGpcQalU1w&expire=1795273665&ofs=11&usr=170390",
+          "sourceUrl": "https://ww1.goojara.to/eLRqVz"
         }
       ],
       "episodesCount": 8
