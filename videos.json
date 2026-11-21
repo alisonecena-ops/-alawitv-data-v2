@@ -6,7 +6,14 @@
       "description": "قناة روداو كردي 2026 بث مباشر",
       "videoUrl": "https://live.rudaw.net/hls/rudaw-tv/master.m3u8",
       "thumbnailUrl": "https://cdn.aptoide.com/imgs/7/d/6/7d60806f8992ead2703af7e7fa8c411d_icon.png",
-      "category": "قنوات"
+      "category": "قنوات",
+      "subtitleUrl": "",
+      "sourceUrl": "",
+      "qualities": {
+        "480": "https://live.rudaw.net/hls/rudaw-tv/master.m3u8",
+        "720": "https://live.rudaw.net/hls/rudaw-tv/master.m3u8",
+        "1080": "https://live.rudaw.net/hls/rudaw-tv/master.m3u8"
+      }
     },
     {
       "id": "1795252864578_34",
